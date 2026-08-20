@@ -1,0 +1,1 @@
+# pdm2026d-equipo-02-easyhome
