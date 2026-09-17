@@ -51,3 +51,9 @@ Reglas de trabajo:
 - Los cambios deben integrarse mediante un Pull Request.
 - Otro integrante debe revisar el Pull Request antes de hacer merge.
 - No se realizan cambios directamente sobre la rama `main`.
+
+## Estructura inicial del proyecto
+
+La aplicación usa una arquitectura **feature-first con capas**. La decisión, las responsabilidades y las convenciones para agregar funcionalidades están documentadas en [`docs/architecture.md`](docs/architecture.md).
+
+La funcionalidad de alojamientos ya cuenta con la separación base entre `presentation`, `domain` y `data`, lista para incorporar búsqueda, filtros, listado y detalle sin mezclar responsabilidades.
