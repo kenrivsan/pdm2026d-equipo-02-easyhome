@@ -1,7 +1,4 @@
-enum AccommodationType {
-  apartment,
-  boardingHouse,
-}
+enum AccommodationType { apartment, boardingHouse }
 
 class Accommodation {
   const Accommodation({

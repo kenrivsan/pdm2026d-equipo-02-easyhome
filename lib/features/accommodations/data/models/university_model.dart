@@ -16,8 +16,8 @@ class UniversityModel extends University {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'departmentId': departmentId,
-      };
+    'id': id,
+    'name': name,
+    'departmentId': departmentId,
+  };
 }

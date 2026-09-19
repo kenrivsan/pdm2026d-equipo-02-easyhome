@@ -1,10 +1,7 @@
 import '../../domain/entities/department.dart';
 
 class DepartmentModel extends Department {
-  const DepartmentModel({
-    required super.id,
-    required super.name,
-  });
+  const DepartmentModel({required super.id, required super.name});
 
   factory DepartmentModel.fromJson(Map<String, dynamic> json) {
     return DepartmentModel(
@@ -13,8 +10,5 @@ class DepartmentModel extends Department {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-      };
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
 }
