@@ -1,15 +1,16 @@
+
 import 'package:flutter/material.dart';
 
-import 'search_page.dart';
+import 'results_page.dart';
 
-class AccommodationsPage extends StatelessWidget {
-  const AccommodationsPage({super.key});
+class SearchPage extends StatelessWidget {
+  const SearchPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Easy Home'),
+        title: const Text('Buscar alojamiento'),
       ),
       body: Center(
         child: ElevatedButton(
@@ -17,11 +18,11 @@ class AccommodationsPage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const SearchPage(),
+                builder: (context) => const ResultsPage(),
               ),
             );
           },
-          child: const Text('Buscar alojamiento'),
+          child: const Text('Ver resultados'),
         ),
       ),
     );
