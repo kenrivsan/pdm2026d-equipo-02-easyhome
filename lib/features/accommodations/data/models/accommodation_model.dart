@@ -38,19 +38,19 @@ class AccommodationModel extends Accommodation {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'type': type.name,
-        'location': location,
-        'departmentId': departmentId,
-        'universityIds': universityIds,
-        'monthlyPrice': monthlyPrice,
-        'available': available,
-        'bathrooms': bathrooms,
-        'sizeSquareMeters': sizeSquareMeters,
-        'imageUrls': imageUrls,
-        'contactName': contactName,
-        'contactPhone': contactPhone,
-        'contactEmail': contactEmail,
-      };
+    'id': id,
+    'title': title,
+    'type': type.name,
+    'location': location,
+    'departmentId': departmentId,
+    'universityIds': universityIds,
+    'monthlyPrice': monthlyPrice,
+    'available': available,
+    'bathrooms': bathrooms,
+    'sizeSquareMeters': sizeSquareMeters,
+    'imageUrls': imageUrls,
+    'contactName': contactName,
+    'contactPhone': contactPhone,
+    'contactEmail': contactEmail,
+  };
 }

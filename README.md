@@ -57,3 +57,5 @@ Reglas de trabajo:
 La aplicación usa una arquitectura **feature-first con capas**. La decisión, las responsabilidades y las convenciones para agregar funcionalidades están documentadas en [`docs/architecture.md`](docs/architecture.md).
 
 La funcionalidad de alojamientos ya cuenta con la separación base entre `presentation`, `domain` y `data`, lista para incorporar búsqueda, filtros, listado y detalle sin mezclar responsabilidades.
+
+La estrategia de estado y acceso a datos para M1 se documenta en [`docs/state-and-data.md`](docs/state-and-data.md).
