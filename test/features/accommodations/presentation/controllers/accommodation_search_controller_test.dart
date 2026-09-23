@@ -1,3 +1,4 @@
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:easyhome/features/accommodations/data/datasources/accommodation_data_source.dart';
@@ -15,7 +16,9 @@ void main() {
       accommodationRepository: AccommodationRepositoryImpl(
         InMemoryAccommodationDataSource(),
       ),
-      locationRepository: LocationRepositoryImpl(InMemoryLocationDataSource()),
+      locationRepository: LocationRepositoryImpl(
+        InMemoryLocationDataSource(),
+      ),
     );
   });
 
@@ -68,6 +71,19 @@ void main() {
       );
 
       expect(accommodation?.title, 'Pensionado cerca de la USAC');
+    },
+  );
+
+  test(
+    'devuelve una lista vacía cuando no hay alojamientos coincidentes',
+    () async {
+      await controller.loadData();
+
+      controller.selectDepartment('guatemala');
+      controller.selectUniversity('usac-central');
+      controller.selectType(AccommodationType.apartment);
+
+      expect(controller.filteredAccommodations, isEmpty);
     },
   );
 }
