@@ -1,5 +1,5 @@
-import '../models/accommodation_model.dart';
 import '../../domain/entities/accommodation.dart';
+import '../models/accommodation_model.dart';
 
 abstract interface class AccommodationDataSource {
   Future<List<AccommodationModel>> getAccommodations();
@@ -18,10 +18,13 @@ class InMemoryAccommodationDataSource implements AccommodationDataSource {
       monthlyPrice: 1800,
       bathrooms: 1,
       sizeSquareMeters: 20,
-      imageUrls: ['https://example.com/room-guatemala-1.jpg'],
+      imageUrls: [
+        'https://picsum.photos/seed/easyhome-usac/900/600',
+      ],
       contactName: 'Persona anfitriona de ejemplo',
       contactPhone: '5555-0101',
     ),
+
     AccommodationModel(
       id: 'apartment-quetzaltenango-1',
       title: 'Apartamento para estudiantes',
@@ -32,11 +35,14 @@ class InMemoryAccommodationDataSource implements AccommodationDataSource {
       monthlyPrice: 2200,
       bathrooms: 1,
       sizeSquareMeters: 45,
-      imageUrls: ['https://example.com/apartment-quetzaltenango-1.jpg'],
+      imageUrls: [
+        'https://picsum.photos/seed/easyhome-quetzaltenango/900/600',
+      ],
       contactName: 'Persona anfitriona de ejemplo',
       contactPhone: '5555-0102',
       contactEmail: 'host@example.com',
     ),
+
     AccommodationModel(
       id: 'apartment-guatemala-unavailable',
       title: 'Apartamento no disponible',
@@ -47,7 +53,9 @@ class InMemoryAccommodationDataSource implements AccommodationDataSource {
       monthlyPrice: 2500,
       bathrooms: 1,
       sizeSquareMeters: 40,
-      imageUrls: ['https://example.com/apartment-guatemala-2.jpg'],
+      imageUrls: [
+        'https://picsum.photos/seed/easyhome-guatemala/900/600',
+      ],
       contactName: 'Persona anfitriona de ejemplo',
       contactPhone: '5555-0103',
       available: false,
@@ -55,6 +63,7 @@ class InMemoryAccommodationDataSource implements AccommodationDataSource {
   ];
 
   @override
-  Future<List<AccommodationModel>> getAccommodations() async =>
-      List.unmodifiable(_accommodations);
+  Future<List<AccommodationModel>> getAccommodations() async {
+    return List.unmodifiable(_accommodations);
+  }
 }
