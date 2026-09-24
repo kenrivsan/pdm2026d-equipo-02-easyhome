@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -47,6 +46,62 @@ void main() {
         find.text(
           'No se encontraron alojamientos disponibles para esta búsqueda.',
         ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'abre el detalle al seleccionar un alojamiento',
+    (WidgetTester tester) async {
+      final controller = AccommodationSearchController(
+        accommodationRepository: AccommodationRepositoryImpl(
+          InMemoryAccommodationDataSource(),
+        ),
+        locationRepository: LocationRepositoryImpl(
+          InMemoryLocationDataSource(),
+        ),
+      );
+
+      addTearDown(controller.dispose);
+
+      await controller.loadData();
+
+      controller.selectDepartment('quetzaltenango');
+      controller.selectUniversity('mesoamericana-quetzaltenango');
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider<AccommodationSearchController>.value(
+          value: controller,
+          child: const MaterialApp(
+            home: ResultsPage(),
+          ),
+        ),
+      );
+
+      expect(
+        find.text('Apartamento para estudiantes'),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.text('Apartamento para estudiantes'),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Detalle del alojamiento'),
+        findsOneWidget,
+      );
+
+      expect(
+        find.text('Zona 3, Quetzaltenango'),
+        findsOneWidget,
+      );
+
+      expect(
+        find.text('Persona anfitriona de ejemplo'),
         findsOneWidget,
       );
     },

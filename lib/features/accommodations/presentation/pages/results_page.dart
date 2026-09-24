@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../domain/entities/accommodation.dart';
 import '../controllers/accommodation_search_controller.dart';
+import 'accommodation_detail_page.dart';
 
 class ResultsPage extends StatelessWidget {
   const ResultsPage({super.key});
@@ -81,10 +82,11 @@ class ResultsPage extends StatelessWidget {
                         return Card(
                           child: ListTile(
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Seleccionaste ${accommodation.title}',
+                               Navigator.push(
+                                context,
+                               MaterialPageRoute(
+                                    builder: (context) => AccommodationDetailPage(
+                                    accommodation: accommodation,
                                   ),
                                 ),
                               );
