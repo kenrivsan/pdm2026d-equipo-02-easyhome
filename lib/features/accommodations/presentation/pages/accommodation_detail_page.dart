@@ -30,10 +30,12 @@ class AccommodationDetailPage extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
+
             Text(
               typeLabel,
               style: Theme.of(context).textTheme.titleMedium,
             ),
+
             const SizedBox(height: 24),
 
             _DetailRow(
@@ -41,6 +43,7 @@ class AccommodationDetailPage extends StatelessWidget {
               label: 'Ubicación',
               value: accommodation.location,
             ),
+
             const SizedBox(height: 12),
 
             _DetailRow(
@@ -52,6 +55,7 @@ class AccommodationDetailPage extends StatelessWidget {
                   ? 'Disponible'
                   : 'No disponible',
             ),
+
             const SizedBox(height: 12),
 
             _DetailRow(
@@ -59,6 +63,7 @@ class AccommodationDetailPage extends StatelessWidget {
               label: 'Baños',
               value: '${accommodation.bathrooms}',
             ),
+
             const SizedBox(height: 12),
 
             _DetailRow(
@@ -67,13 +72,13 @@ class AccommodationDetailPage extends StatelessWidget {
               value:
                   '${accommodation.sizeSquareMeters.toStringAsFixed(0)} m²',
             ),
+
             const SizedBox(height: 12),
 
             _DetailRow(
               icon: Icons.payments_outlined,
               label: 'Precio mensual',
-              value:
-                  'Q${accommodation.monthlyPrice.toStringAsFixed(2)}',
+              value: 'Q${accommodation.monthlyPrice.toStringAsFixed(2)}',
             ),
 
             const SizedBox(height: 28),
@@ -82,17 +87,18 @@ class AccommodationDetailPage extends StatelessWidget {
               'Imágenes',
               style: Theme.of(context).textTheme.titleLarge,
             ),
+
             const SizedBox(height: 12),
 
             if (accommodation.imageUrls.isEmpty)
-              const Text('No hay imágenes disponibles.')
+              _buildNoImagesMessage(context)
             else
               SizedBox(
-                height: 180,
+                height: 220,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: accommodation.imageUrls.length,
-                  separatorBuilder: (_, __) =>
+                  separatorBuilder: (context, index) =>
                       const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     final imageUrl = accommodation.imageUrls[index];
@@ -100,11 +106,44 @@ class AccommodationDetailPage extends StatelessWidget {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: SizedBox(
-                        width: 260,
+                        width: 320,
+                        height: 220,
                         child: Image.network(
                           imageUrl,
+                          width: 320,
+                          height: 220,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
+
+                          // Importante para Flutter Web.
+                          // Permite usar un elemento HTML para evitar
+                          // problemas de CORS con imágenes externas.
+                          webHtmlElementStrategy:
+                              WebHtmlElementStrategy.prefer,
+
+                          loadingBuilder: (
+                            context,
+                            child,
+                            loadingProgress,
+                          ) {
+                            if (loadingProgress == null) {
+                              return child;
+                            }
+
+                            return Container(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          },
+
+                          errorBuilder: (
+                            context,
+                            error,
+                            stackTrace,
+                          ) {
                             return Container(
                               color: Theme.of(context)
                                   .colorScheme
@@ -114,11 +153,13 @@ class AccommodationDetailPage extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.image_outlined,
+                                      Icons.broken_image_outlined,
                                       size: 48,
                                     ),
                                     SizedBox(height: 8),
-                                    Text('Imagen disponible'),
+                                    Text(
+                                      'No se pudo cargar la imagen',
+                                    ),
                                   ],
                                 ),
                               ),
@@ -137,6 +178,7 @@ class AccommodationDetailPage extends StatelessWidget {
               'Información de contacto',
               style: Theme.of(context).textTheme.titleLarge,
             ),
+
             const SizedBox(height: 12),
 
             _DetailRow(
@@ -144,6 +186,7 @@ class AccommodationDetailPage extends StatelessWidget {
               label: 'Encargado',
               value: accommodation.contactName,
             ),
+
             const SizedBox(height: 12),
 
             _DetailRow(
@@ -152,7 +195,8 @@ class AccommodationDetailPage extends StatelessWidget {
               value: accommodation.contactPhone,
             ),
 
-            if (accommodation.contactEmail != null) ...[
+            if (accommodation.contactEmail != null &&
+                accommodation.contactEmail!.isNotEmpty) ...[
               const SizedBox(height: 12),
               _DetailRow(
                 icon: Icons.email_outlined,
@@ -162,6 +206,27 @@ class AccommodationDetailPage extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNoImagesMessage(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Column(
+        children: [
+          Icon(
+            Icons.image_not_supported_outlined,
+            size: 48,
+          ),
+          SizedBox(height: 8),
+          Text('No hay imágenes disponibles.'),
+        ],
       ),
     );
   }
