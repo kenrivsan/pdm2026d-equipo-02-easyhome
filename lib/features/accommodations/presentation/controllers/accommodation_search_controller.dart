@@ -5,6 +5,7 @@ import '../../domain/entities/department.dart';
 import '../../domain/entities/university.dart';
 import '../../domain/repositories/accommodation_repository.dart';
 import '../../domain/repositories/location_repository.dart';
+import '../../data/owner_accommodation_store.dart';
 
 class AccommodationSearchController extends ChangeNotifier {
   AccommodationSearchController({
@@ -44,9 +45,14 @@ class AccommodationSearchController extends ChangeNotifier {
     );
   }
 
+  List<Accommodation> get allAccommodations => [
+    ..._accommodations,
+    ...OwnerAccommodationStore.instance.catalogItems,
+  ];
+
   List<Accommodation> get filteredAccommodations {
     return List.unmodifiable(
-      _accommodations.where((accommodation) {
+      allAccommodations.where((accommodation) {
         final matchesDepartment =
             _selectedDepartmentId == null ||
             accommodation.departmentId == _selectedDepartmentId;
@@ -118,10 +124,14 @@ class AccommodationSearchController extends ChangeNotifier {
   }
 
   Accommodation? findAccommodationById(String id) {
-    for (final accommodation in _accommodations) {
+    for (final accommodation in allAccommodations) {
       if (accommodation.id == id) return accommodation;
     }
     return null;
+  }
+
+  void refreshAccommodations() {
+    notifyListeners();
   }
 
   University? _findUniversity(String? id) {
