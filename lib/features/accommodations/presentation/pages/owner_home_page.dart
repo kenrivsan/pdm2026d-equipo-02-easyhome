@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_theme.dart';
 
+import 'add_accommodation_page.dart';
+import 'my_accommodations_page.dart';
+
 class OwnerHomePage extends StatelessWidget {
   const OwnerHomePage({super.key});
 
@@ -76,14 +79,21 @@ class OwnerHomePage extends StatelessWidget {
                   icon: Icons.add_home_work_outlined,
                   title: 'Agregar alojamiento',
                   subtitle: 'Publica un apartamento o pensionado.',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Formulario de alojamiento será el siguiente paso.',
-                        ),
+                  onTap: () async {
+                  final publicado = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddAccommodationPage(),
                       ),
                     );
+
+                    if (publicado == true && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Alojamiento publicado correctamente'),
+                        ),
+                      );
+                    }
                   },
                 ),
 
@@ -94,11 +104,10 @@ class OwnerHomePage extends StatelessWidget {
                   title: 'Mis alojamientos',
                   subtitle: 'Consulta y administra tus publicaciones.',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Listado del propietario será el siguiente paso.',
-                        ),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MyAccommodationsPage(),
                       ),
                     );
                   },
