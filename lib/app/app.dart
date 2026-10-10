@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,7 +9,7 @@ import '../features/accommodations/data/repositories/location_repository_impl.da
 import '../features/accommodations/domain/repositories/accommodation_repository.dart';
 import '../features/accommodations/domain/repositories/location_repository.dart';
 import '../features/accommodations/presentation/controllers/accommodation_search_controller.dart';
-import '../features/accommodations/presentation/pages/accommodations_page.dart';
+import '../features/auth/presentation/pages/login_page.dart';
 import 'theme/app_theme.dart';
 
 class EasyHomeApp extends StatelessWidget {
@@ -19,28 +20,29 @@ class EasyHomeApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<AccommodationRepository>(
-          create:
-              (_) => AccommodationRepositoryImpl(
-                InMemoryAccommodationDataSource(),
-              ),
+          create: (_) => AccommodationRepositoryImpl(
+            InMemoryAccommodationDataSource(),
+          ),
         ),
         Provider<LocationRepository>(
-          create: (_) => LocationRepositoryImpl(InMemoryLocationDataSource()),
+          create: (_) => LocationRepositoryImpl(
+            InMemoryLocationDataSource(),
+          ),
         ),
         ChangeNotifierProvider(
-          create:
-              (context) => AccommodationSearchController(
-                accommodationRepository:
-                    context.read<AccommodationRepository>(),
-                locationRepository: context.read<LocationRepository>(),
-              )..loadData(),
+          create: (context) => AccommodationSearchController(
+            accommodationRepository:
+                context.read<AccommodationRepository>(),
+            locationRepository:
+                context.read<LocationRepository>(),
+          )..loadData(),
         ),
       ],
       child: MaterialApp(
         title: 'Easy Home',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-        home: const AccommodationsPage(),
+        home: const LoginPage(),
       ),
     );
   }
