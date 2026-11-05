@@ -10,11 +10,12 @@ import '../../domain/repositories/catalog_reader.dart';
 /// Se sustituirá por el adaptador compartido al publicar su contrato definitivo.
 final catalogReaderProvider = Provider<CatalogReader>((ref) {
   throw StateError('Falta inyectar el lector del catálogo compartido.');
-});
+}, dependencies: const []);
 
 final catalogFilterProvider =
     NotifierProvider<CatalogFilterNotifier, CatalogFilter>(
       CatalogFilterNotifier.new,
+      dependencies: const [],
     );
 
 class CatalogFilterNotifier extends Notifier<CatalogFilter> {
@@ -46,6 +47,7 @@ class CatalogFilterNotifier extends Notifier<CatalogFilter> {
 
 final _catalogRevisionProvider = NotifierProvider<_CatalogRevision, int>(
   _CatalogRevision.new,
+  dependencies: [catalogReaderProvider],
 );
 
 class _CatalogRevision extends Notifier<int> {
@@ -67,4 +69,4 @@ final catalogResultsProvider = FutureProvider<List<Accommodation>>((ref) async {
   ref.watch(_catalogRevisionProvider);
   return List.unmodifiable(await reader.query(filter));
   // Reintentar es explícito: un error no provoca consultas ocultas con backoff.
-}, retry: (_, _) => null);
+}, retry: (_, _) => null, dependencies: [catalogReaderProvider, catalogFilterProvider, _catalogRevisionProvider]);

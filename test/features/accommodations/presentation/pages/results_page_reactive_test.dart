@@ -1,3 +1,5 @@
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'dart:async';
 
 import 'package:easyhome/app/app.dart';
@@ -169,6 +171,8 @@ void main() {
   testWidgets('la composición real permite entrar y consultar el catálogo', (
     tester,
   ) async {
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
     await tester.pumpWidget(const EasyHomeApp());
     await tester.pumpAndSettle();
     final fields = find.byType(TextFormField);

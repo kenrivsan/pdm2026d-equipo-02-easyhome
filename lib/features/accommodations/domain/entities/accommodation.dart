@@ -14,6 +14,7 @@ class Accommodation {
     required this.imageUrls,
     required this.contactName,
     required this.contactPhone,
+    this.description = '',
     this.contactEmail,
     this.available = true,
   });
@@ -46,5 +47,6 @@ class Accommodation {
   /// Información de contacto del encargado.
   final String contactName;
   final String contactPhone;
+  final String description;
   final String? contactEmail;
 }

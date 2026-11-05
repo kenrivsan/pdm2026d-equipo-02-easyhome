@@ -14,6 +14,7 @@ class AccommodationModel extends Accommodation {
     required super.imageUrls,
     required super.contactName,
     required super.contactPhone,
+    super.description,
     super.contactEmail,
     super.available,
   });
@@ -32,6 +33,7 @@ class AccommodationModel extends Accommodation {
       imageUrls: List<String>.from(json['imageUrls'] as List),
       contactName: json['contactName'] as String,
       contactPhone: json['contactPhone'] as String,
+      description: json['description'] as String? ?? '',
       contactEmail: json['contactEmail'] as String?,
       available: json['available'] as bool? ?? true,
     );
@@ -51,6 +53,7 @@ class AccommodationModel extends Accommodation {
     'imageUrls': imageUrls,
     'contactName': contactName,
     'contactPhone': contactPhone,
+    'description': description,
     'contactEmail': contactEmail,
   };
 }

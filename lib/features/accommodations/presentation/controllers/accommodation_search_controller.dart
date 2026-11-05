@@ -1,25 +1,51 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/accommodation.dart';
+import '../../domain/entities/accommodation_query.dart';
+import '../../domain/entities/accommodation_record.dart';
 import '../../domain/entities/department.dart';
 import '../../domain/entities/university.dart';
 import '../../domain/repositories/accommodation_repository.dart';
 import '../../domain/repositories/location_repository.dart';
-import '../../data/owner_accommodation_store.dart';
+import '../../domain/repositories/shared_accommodation_repository.dart';
 
 class AccommodationSearchController extends ChangeNotifier {
   AccommodationSearchController({
-    required AccommodationRepository accommodationRepository,
+    AccommodationRepository? accommodationRepository,
+    SharedAccommodationRepository? sharedAccommodationRepository,
     required LocationRepository locationRepository,
-  }) : _accommodationRepository = accommodationRepository,
-       _locationRepository = locationRepository;
+  }) : assert(
+         accommodationRepository != null ||
+             sharedAccommodationRepository != null,
+         'Provide the shared repository (or the legacy repository in tests).',
+       ),
+       _accommodationRepository = accommodationRepository,
+       _sharedAccommodationRepository = sharedAccommodationRepository,
+       _locationRepository = locationRepository {
+    if (sharedAccommodationRepository != null) {
+      _changesSubscription = sharedAccommodationRepository.changes.listen(
+        (_) => unawaited(refreshAccommodations()),
+      );
+    }
+  }
 
-  final AccommodationRepository _accommodationRepository;
+  final AccommodationRepository? _accommodationRepository;
+  final SharedAccommodationRepository? _sharedAccommodationRepository;
   final LocationRepository _locationRepository;
+  StreamSubscription<int>? _changesSubscription;
 
   /// Permite componer lectores de la misma fuente, sin crear otro repositorio.
-  AccommodationRepository get accommodationRepository =>
-      _accommodationRepository;
+  AccommodationRepository get accommodationRepository {
+    final repository = _accommodationRepository;
+    if (repository == null) {
+      throw StateError(
+        'El controlador usa el repositorio compartido; no tiene fuente legada.',
+      );
+    }
+    return repository;
+  }
 
   List<Accommodation> _accommodations = const [];
   List<Department> _departments = const [];
@@ -29,6 +55,8 @@ class AccommodationSearchController extends ChangeNotifier {
   AccommodationType? _selectedType;
   bool _isLoading = false;
   String? _errorMessage;
+  int _accommodationRequest = 0;
+  bool _disposed = false;
 
   List<Department> get departments => List.unmodifiable(_departments);
   List<University> get universities => List.unmodifiable(_universities);
@@ -49,10 +77,8 @@ class AccommodationSearchController extends ChangeNotifier {
     );
   }
 
-  List<Accommodation> get allAccommodations => [
-    ..._accommodations,
-    ...OwnerAccommodationStore.instance.catalogItems,
-  ];
+  List<Accommodation> get allAccommodations =>
+      List.unmodifiable(_accommodations);
 
   List<Accommodation> get filteredAccommodations {
     return List.unmodifiable(
@@ -82,12 +108,12 @@ class AccommodationSearchController extends ChangeNotifier {
     try {
       _departments = await _locationRepository.getDepartments();
       _universities = await _locationRepository.getUniversities();
-      _accommodations = await _accommodationRepository.getAccommodations();
+      await _loadAccommodations(notify: false);
     } catch (_) {
       _errorMessage = 'No fue posible cargar los alojamientos.';
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
   }
 
@@ -134,9 +160,30 @@ class AccommodationSearchController extends ChangeNotifier {
     return null;
   }
 
-  void refreshAccommodations() {
-    notifyListeners();
+  Future<void> refreshAccommodations() => _loadAccommodations();
+
+  Future<void> _loadAccommodations({bool notify = true}) async {
+    final request = ++_accommodationRequest;
+    try {
+      final shared = _sharedAccommodationRepository;
+      final accommodations =
+          shared == null
+              ? await _accommodationRepository!.getAccommodations()
+              : (await shared.query(
+                const AccommodationQuery(),
+              )).map(_toAccommodation).toList(growable: false);
+      if (_disposed || request != _accommodationRequest) return;
+      _accommodations = accommodations;
+      _errorMessage = null;
+    } catch (_) {
+      if (_disposed || request != _accommodationRequest) return;
+      _errorMessage = 'No fue posible cargar los alojamientos.';
+    }
+    if (notify && !_disposed) notifyListeners();
   }
+
+  Accommodation _toAccommodation(AccommodationRecord record) =>
+      record.toAccommodation();
 
   University? _findUniversity(String? id) {
     if (id == null) return null;
@@ -144,5 +191,12 @@ class AccommodationSearchController extends ChangeNotifier {
       if (university.id == id) return university;
     }
     return null;
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    unawaited(_changesSubscription?.cancel());
+    super.dispose();
   }
 }

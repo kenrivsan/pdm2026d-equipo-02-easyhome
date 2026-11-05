@@ -1,53 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    show ConsumerWidget, ProviderScope, WidgetRef, Ref;
 import 'package:provider/provider.dart';
 
-import '../features/accommodations/data/datasources/accommodation_data_source.dart';
 import '../features/accommodations/data/datasources/location_data_source.dart';
-import '../features/accommodations/data/repositories/accommodation_repository_impl.dart';
 import '../features/accommodations/data/repositories/location_repository_impl.dart';
-import '../features/accommodations/domain/repositories/accommodation_repository.dart';
+import '../features/accommodations/data/repositories/shared_catalog_reader.dart';
+import '../features/accommodations/domain/entities/deleted_accommodation.dart';
 import '../features/accommodations/domain/repositories/location_repository.dart';
 import '../features/accommodations/presentation/controllers/accommodation_search_controller.dart';
+import '../features/accommodations/presentation/controllers/catalog_deletion_controller.dart';
+import '../features/accommodations/presentation/controllers/catalog_deletion_provider.dart';
+import '../features/accommodations/presentation/controllers/catalog_providers.dart';
+import '../features/accommodations/presentation/providers/shared_accommodation_providers.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import 'theme/app_theme.dart';
-import 'catalog_scope.dart';
 
 class EasyHomeApp extends StatelessWidget {
   const EasyHomeApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ProviderScope(
+    overrides: [
+      catalogReaderProvider.overrideWith(_createCatalogReader),
+      catalogDeletionControllerProvider.overrideWith(_createDeletionController),
+    ],
+    child: const _EasyHomeProviders(),
+  );
+}
+
+SharedCatalogReader _createCatalogReader(Ref ref) =>
+    SharedCatalogReader(ref.watch(sharedAccommodationRepositoryProvider));
+
+CatalogDeletionController<Object> _createDeletionController(Ref ref) {
+  final repository = ref.watch(sharedAccommodationRepositoryProvider);
+  final controller = CatalogDeletionController<Object>(
+    deleteById: repository.deleteById,
+    // Se conserva el snapshot original. El cast pertenece solo a este puente
+    // entre el componente genérico de UI y la entidad definitiva del repositorio.
+    restore: (snapshot) => repository.restore(snapshot as DeletedAccommodation),
+  );
+  ref.onDispose(controller.dispose);
+  return controller;
+}
+
+class _EasyHomeProviders extends ConsumerWidget {
+  const _EasyHomeProviders();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sharedRepository = ref.watch(sharedAccommodationRepositoryProvider);
     return MultiProvider(
       providers: [
-        Provider<AccommodationRepository>(
-          create:
-              (_) => AccommodationRepositoryImpl(
-                InMemoryAccommodationDataSource(),
-              ),
-        ),
         Provider<LocationRepository>(
           create: (_) => LocationRepositoryImpl(InMemoryLocationDataSource()),
         ),
         ChangeNotifierProvider(
           create:
               (context) => AccommodationSearchController(
-                accommodationRepository:
-                    context.read<AccommodationRepository>(),
+                sharedAccommodationRepository: sharedRepository,
                 locationRepository: context.read<LocationRepository>(),
               )..loadData(),
         ),
       ],
-      child: Builder(
-        builder:
-            (context) => CatalogScope(
-              repository: context.read<AccommodationRepository>(),
-              child: MaterialApp(
-                title: 'Easy Home',
-                debugShowCheckedModeBanner: false,
-                theme: AppTheme.light,
-                home: const LoginPage(),
-              ),
-            ),
+      child: MaterialApp(
+        title: 'Easy Home',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        home: const LoginPage(),
       ),
     );
   }
