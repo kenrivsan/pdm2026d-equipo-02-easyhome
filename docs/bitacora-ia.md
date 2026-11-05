@@ -163,3 +163,17 @@
 - Correcciones del codigo generado de prueba: crear e inicializar el repositorio dentro del reloj de cada widget test, corregir la ejecucion de los bloques asincronos y asegurar limpieza de suscripciones. Se corrigio un error de sintaxis durante la simplificacion del harness; se volvieron a ejecutar todas las pruebas. No se publicaron los resultados intermedios como evidencia valida.
 - Verificacion final: 85 pruebas aprobadas; flutter analyze --no-pub sin problemas; formato de 68 archivos sin cambios; flutter build web --no-pub --no-web-resources-cdn aprobado. Persiste el aviso no bloqueante de fuente Cupertino. No se repitio la prueba manual de navegador para este cambio de composicion.
 - Pendiente: integracion de la pantalla real de Emmanuel, aceptacion de Roberth y sincronizacion visual conjunta. La prueba de composicion no equivale a tener ambos listados ya conectados. Sin cambios a main, merge automatico ni cierre de issues. No se crearon archivos de prompts o coordinacion.
+
+## 2026-11-04 - QA de aceptacion issue #28 - Victor
+
+- Herramienta utilizada: ChatGPT.
+- Se revisaron los componentes del PR #32 y el contrato del PR #34.
+- Se prepararon 7 pruebas de aceptacion con fuente controlada.
+- Resultado individual: 7 pruebas aprobadas.
+- Suite completa: 49 pruebas aprobadas.
+- flutter analyze: sin problemas.
+- flutter build web: compilacion exitosa.
+- git diff --check: sin errores.
+- No se modificaron ResultsPage ni el almacenamiento.
+- Pendiente: validar integracion y persistencia real.
+- Las pruebas no certifican aun el issue #28 completo.
