@@ -13,7 +13,9 @@ class CatalogDeletionController<S extends Object> extends ChangeNotifier {
 
   final Future<S> Function(String) _deleteById;
   final Future<void> Function(S) _restore;
-  final _events = StreamController<CatalogDeletionEvent<S>>.broadcast();
+  late final _events = StreamController<CatalogDeletionEvent<S>>.broadcast(
+    onCancel: _releaseUnobservedTickets,
+  );
   final _locked = <String>{};
   final _tickets = <CatalogUndoTicket<S>>{};
   bool _disposed = false;
@@ -29,7 +31,7 @@ class CatalogDeletionController<S extends Object> extends ChangeNotifier {
       if (_disposed) return;
       final ticket = CatalogUndoTicket<S>._(id, snapshot);
       _tickets.add(ticket);
-      _events.add(CatalogDeletionEvent(CatalogDeletionKind.deleted, ticket));
+      _publish(CatalogDeletionEvent(CatalogDeletionKind.deleted, ticket));
     } catch (_) {
       if (_disposed) return;
       _locked.remove(id);
@@ -50,9 +52,7 @@ class CatalogDeletionController<S extends Object> extends ChangeNotifier {
     } catch (_) {
       if (_disposed) return;
       ticket._restoring = false;
-      _events.add(
-        CatalogDeletionEvent(CatalogDeletionKind.restoreFailed, ticket),
-      );
+      _publish(CatalogDeletionEvent(CatalogDeletionKind.restoreFailed, ticket));
     }
   }
 
@@ -60,6 +60,27 @@ class CatalogDeletionController<S extends Object> extends ChangeNotifier {
   void expire(CatalogUndoTicket<S> ticket) {
     if (_disposed || ticket._restoring) return;
     _release(ticket);
+  }
+
+  void _publish(CatalogDeletionEvent<S> event) {
+    // Un broadcast pierde eventos sin oyentes. Si el host ya salió, no dejar
+    // un ticket inaccesible bloqueando el ID al terminar la escritura.
+    if (!_events.hasListener) {
+      final ticket = event.ticket;
+      if (ticket != null) expire(ticket);
+      return;
+    }
+    _events.add(event);
+  }
+
+  void _releaseUnobservedTickets() {
+    if (_disposed) return;
+    // También cubre cancelar entre add(event) y su entrega asíncrona.
+    // Una restauración en curso conserva el bloqueo hasta terminar; no se
+    // cancela ni se repite ninguna escritura por desmontar el host.
+    for (final ticket in _tickets.toList()) {
+      expire(ticket);
+    }
   }
 
   void _release(CatalogUndoTicket<S> ticket) {

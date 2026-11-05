@@ -1,5 +1,38 @@
 # Issue #28 — Borrado y Deshacer de Roberth
 
+## Revisión de la conexión de Kenneth — 2026-11-04
+
+Se revisó #33 en `343446f62cb18f60672f4469040c2aac556e056f`. Los commits originales de #32 (`daa2bd5`, `87e62d3`) ya son ancestros de esa integración: no se repiten, copian ni integran por otro PR. La corrección posterior se entrega como un solo commit incremental en `feat/28-borrado-deshacer`; Kenneth podrá incorporarlo una vez, conservando autoría. #32 queda como origen/evidencia y #33 como vía de integración del catálogo. No se cierran PR/issues ni se realiza merge.
+
+**Conexión revisada:** ResultsPage obtiene un controller de un provider independiente del filtro. CatalogUndoHost envuelve el Scaffold completo, sin key asociada al filtro, fuera de CatalogResultsSection y sus ramas cargando/error/vacío/datos. Las tarjetas y el Dismissible conservan ID estable. El host permanece mientras la capacidad de escritura y su controller sean los mismos; por defecto el provider sigue en null (solo lectura). Los cambios de filtro o de estado de consulta no cambian ese provider. No se editó ResultsPage ni el provider de Kenneth.
+
+Coordinación de archivos antes de corregir: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/pull/33#issuecomment-6650302698. Se reservaron únicamente controller, pruebas propias y estos documentos en la rama de Roberth. La validación combinada usa una copia local separada, sin publicar en la rama de Kenneth ni añadir sus commits a #32.
+
+**Problema reproducido y corregido:** el stream broadcast descartaba el aviso si el host ya no tenía suscripción. Un borrado terminado tras desmontar, una restauración fallida tras desmontar y la cancelación entre encolar/entregar el evento dejaban el ID bloqueado. Antes del arreglo fallaron las tres comprobaciones. El controller ahora abandona tickets sin consumidor y libera sus IDs, incluso si la cancelación sucede antes de entregar un evento encolado. Una restauración en curso conserva el bloqueo hasta terminar, para evitar otra escritura. Si se remonta el host antes de fallar, recibe Reintentar con el mismo snapshot. Salir no restaura datos, no cancela escrituras ni anuncia éxito falso.
+
+Validación local (Flutter 3.47.7 / Dart 3.13.5):
+
+| Escenario | Resultado |
+|---|---|
+| #33 original: results_page_deletion_integration_test.dart | 8 pruebas aprobadas |
+| Rama propia con corrección, suite completa | 36 pruebas aprobadas: 21 previas + 15 de componentes |
+| #33 + únicamente controller/pruebas corregidos en copia separada, suite completa | 65 pruebas aprobadas (62 originales + 3 nuevas) |
+| Regresiones nuevas/ampliadas | Borrado tardío sin host; restauración fallida sin host; cancelación antes de entregar; remontaje durante restauración con mismo snapshot |
+| Formato | Rama propia: 41 archivos, 0 cambios; copia combinada: 56 archivos, 0 cambios |
+| Análisis | Sin problemas en rama propia y copia combinada |
+
+Se conserva el comportamiento verificado de confirmación lenta/doble gesto, errores, Reintentar, borrados consecutivos, filtro durante escritura, expiración y ausencia de duplicados. Se amplió una prueba existente de desmontaje y se añadieron tres pruebas; no se fabricó otra implementación de los componentes.
+
+### Conexión real pendiente de #34
+
+#34 sigue **abierto, sin integrar**, en `09381fa875b455eee1ba1a40a642e8c4c16d3ee8`. Se revisó su contrato publicado y la retroalimentación de inicialización recuperable, corregida por ese commit. No se incorporó #34 ni se modificaron almacenamiento, dependencias o Mis alojamientos. La suite combinada anterior usa las fuentes de prueba de Kenneth; no certifica la persistencia real.
+
+Después de integrar #34, Kenneth debe conectar un controller estable a `sharedAccommodationRepositoryProvider`: `deleteById` devuelve `Future<DeletedAccommodation>` y `restore` recibe ese mismo DeletedAccommodation (incluye record, deletionToken y sequence). Preferir el tipo concreto para provider/controller y ajustar juntos sus consumidores; no regenerar el snapshot desde Accommodation ni perder el token o sequence. Registrar dispose con el ciclo de vida del provider, sin depender del filtro ni de la revisión de lectura.
+
+El lector de catálogo debe consultar `AccommodationQuery(type, departmentId, universityId, onlyOwned: false)`, delegar `changes` a la **misma instancia** del repositorio y proyectar `record.toAccommodation()` para las tarjetas. La consulta real no filtra por available: conservar la regla del catálogo estudiantil al adaptar sus resultados. Este punto se comunica a Kenneth, sin editar su adaptador. La lectura reactiva y los callbacks de escritura deben compartir instancia para que un borrado/restauración confirmado actualice la consulta vigente.
+
+Revalidar tras esa integración: fallos reales de escritura e inicialización, snapshot exacto (incluye description/isOwned), orden con varios borrados, sincronización de publicaciones y persistencia al reiniciar. PDF S15/retroalimentación externa aún no disponibles localmente; las conclusiones se limitan al código, issues y revisiones accesibles. Las secciones siguientes preservan la evidencia de la preparación original de #32.
+
 ## Alcance y fuentes
 
 Preparación aislada basada en `main` después de PR #30 y #31 (`2b1b8fa`). Se revisaron #27 (incluidas ambas aceptaciones del contrato), #28, las revisiones de los PR, el código actual, la evidencia preliminar de Víctor y los componentes de `feat/28-filtro` (`c72ee60`). No se modifican ResultsPage, OwnerAccommodationStore, dependencias ni persistencia. El PDF S15 y la retroalimentación externa no están disponibles en esta PC nueva, según confirmó el usuario; no se afirma haberlos leído.

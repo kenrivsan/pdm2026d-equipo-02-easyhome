@@ -306,7 +306,88 @@ void main() {
     repository.deleteGate!.complete();
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+    expect(controller.isLocked('2'), isFalse);
+    expect(repository.deleteCalls, ['2']);
+    expect(repository.items, hasLength(4));
+    expect(repository.receivedSnapshots, isEmpty);
   });
+
+  testWidgets('restauracion falla tras desmontar y libera el ID', (
+    tester,
+  ) async {
+    await mount(tester);
+    await swipe(tester, '2');
+    await tester.pumpAndSettle();
+    repository.restoreGate = Completer<void>();
+    repository.failRestore = true;
+    await tester.tap(find.text('Deshacer'));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(controller.isLocked('2'), isTrue);
+    await controller.deleteById('2');
+    expect(repository.deleteCalls, ['2']);
+    repository.restoreGate!.complete();
+    await tester.pumpAndSettle();
+    expect(controller.isLocked('2'), isFalse);
+    expect(repository.receivedSnapshots, hasLength(1));
+    expect(repository.items, hasLength(4));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('remontar durante restauracion permite reintentar el snapshot', (
+    tester,
+  ) async {
+    await mount(tester);
+    await swipe(tester, '2');
+    await tester.pumpAndSettle();
+    repository.restoreGate = Completer<void>();
+    repository.failRestore = true;
+    await tester.tap(find.text('Deshacer'));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+    await mount(tester);
+    expect(controller.isLocked('2'), isTrue);
+    repository.restoreGate!.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('No se pudo restaurar el alojamiento.'), findsOneWidget);
+    expect(find.text('Alojamiento restaurado.'), findsNothing);
+    repository.failRestore = false;
+    await tester.tap(find.text('Reintentar'));
+    await tester.pumpAndSettle();
+    expect(controller.isLocked('2'), isFalse);
+    expect(repository.items, hasLength(5));
+    expect(repository.receivedSnapshots, hasLength(2));
+    expect(
+      repository.receivedSnapshots.first,
+      same(repository.snapshots.single),
+    );
+    expect(
+      repository.receivedSnapshots.last,
+      same(repository.snapshots.single),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  test(
+    'cancelar ultimo oyente antes de entregar evento libera ticket',
+    () async {
+      final events = <CatalogDeletionEvent<_Snapshot>>[];
+      final subscription = controller.events.listen(events.add);
+      var cancelled = false;
+      controller.addListener(() {
+        if (!cancelled && repository.snapshots.isNotEmpty) {
+          cancelled = true;
+          unawaited(subscription.cancel());
+        }
+      });
+      await controller.deleteById('2');
+      await Future<void>.delayed(Duration.zero);
+      expect(events, isEmpty);
+      expect(controller.isLocked('2'), isFalse);
+      expect(repository.deleteCalls, ['2']);
+      expect(repository.receivedSnapshots, isEmpty);
+    },
+  );
 }
 
 /// Falso exclusivamente de pruebas, NO es persistencia ni API definitiva de #27.
