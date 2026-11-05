@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_theme.dart';
@@ -10,9 +9,7 @@ class MyAccommodationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mis alojamientos'),
-      ),
+      appBar: AppBar(title: const Text('Mis alojamientos')),
       body: ListenableBuilder(
         listenable: OwnerAccommodationStore.instance,
         builder: (context, child) {
@@ -25,10 +22,7 @@ class MyAccommodationsPage extends StatelessWidget {
                 child: Text(
                   'Todavía no has publicado alojamientos.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 17,
-                    color: AppTheme.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 17, color: AppTheme.textSecondary),
                 ),
               ),
             );
