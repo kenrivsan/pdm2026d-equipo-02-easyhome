@@ -62,3 +62,12 @@
 - Corrección durante pruebas: la pantalla de login tiene dos textos INICIAR SESIÓN; se seleccionó explícitamente el ElevatedButton para probar la entrada real.
 - Validación: 42 pruebas aprobadas; flutter analyze sin problemas; formato de 50 archivos sin cambios; git diff --check sin errores; compilación web completada, con el aviso preexistente de fuente CupertinoIcons no incluida.
 - Pendiente: revisar la API y el PR reales del grupo #2 y conectar su adaptador definitivo; integrar el componente de Roberth y validar Deshacer/errores/persistencia con Víctor. No cerrar #28 ni hacer merge automático. No se modificaron MyAccommodationsPage, OwnerAccommodationStore ni dependencias.
+
+## 2026-11-04 - Revisión del PR #34 antes de integrar
+
+- Se revisó el commit cd44f59 de feat/29-almacenamiento en una worktree temporal, sin cambiar la implementación del grupo #2 ni mezclarla aún en feat/28-filtro.
+- Confirmaciones verificadas en #27: EmmanuelC-04 por grupo #2 y victordeleon172003 por grupo #1 aceptaron contrato y dependencia. CI remoto 41964533781 aprobado para cd44f59. El PR no tenía revisiones humanas registradas al consultar.
+- Suite publicada reproducida localmente: 32 pruebas aprobadas. La resolución de dependencias en la copia temporal adapta el lockfile al SDK local; esos cambios no se trasladan a ninguna rama.
+- Dos pruebas adicionales de revisión reproducen fallos de recuperación tras error inicial de lectura y de siembra. Ambas fallan: _ready se asigna una sola vez y conserva el Future fallido; query y escrituras vuelven a esperar el mismo error aunque el backend se recupere. Esto bloquea la recuperación mediante Reintentar si el fallo ocurre al inicializar.
+- Las pruebas de reproducción permanecen en la copia temporal, fuera del repositorio de trabajo. Se entrega la observación al usuario para coordinar la corrección con Javier; no se publicó comentario o revisión en nombre de otra persona ni se hizo merge.
+- Pendiente: corregir la inicialización recuperable en el PR #34 y ejecutar esas pruebas junto con las existentes antes de recomendar su integración; después conectar el adaptador definitivo y los componentes del PR #32 en #33.
