@@ -50,3 +50,4 @@
 - Coordinación: comentario publicado en #28 para Kenneth, Javier y Víctor; conector de escritura devolvió 403 y se usó GitHub CLI autenticado como roberdeleon.
 - Validación local: Flutter 3.47.7 / Dart 3.13.5; formato 41 archivos sin cambios, análisis sin problemas, suite completa con 33 pruebas aprobadas (12 nuevas). El CI existente verifica Flutter 3.44.8. Evidencia y pendientes en docs/evidencia_issue_28_borrado.md.
 - Pendiente de aceptación general: API real, integración de ResultsPage, sincronización con publicaciones de propietarios y verificación persistente tras cerrar/abrir. No se cierra #28 ni se hace merge automático.
+- Entrega: PR #32 en borrador desde feat/28-borrado-deshacer. Compilación web local correcta, con aviso de fuente CupertinoIcons ya existente; git diff --check sin errores. Los checks y la descripción del PR registran el resultado de CI y la coordinación final. También se usó GitHub CLI para crear el PR tras 403 del conector.

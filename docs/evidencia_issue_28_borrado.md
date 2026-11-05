@@ -55,7 +55,11 @@ Validación local: Flutter 3.47.7 / Dart 3.13.5 (SDK ya instalado en la PC). El 
 | `dart format --output=none --set-exit-if-changed lib test` | 41 archivos, 0 cambios |
 | `flutter analyze --no-pub` | Sin problemas |
 | `flutter test --no-pub --reporter expanded` | 33 pruebas aprobadas: 21 previas y 12 nuevas |
+| `flutter build web --no-pub` | Compilación correcta; aviso de CupertinoIcons preexistente |
+| `git diff --check` | Sin errores |
 
-La suite utiliza un falso que emite cambios únicamente después de escribir; también emite antes de devolver el Future, para cubrir esa carrera con la reconstrucción de la lista. Compilación web y CI se documentan con sus resultados reales al concluir.
+La suite utiliza un falso que emite cambios únicamente después de escribir; también emite antes de devolver el Future, para cubrir esa carrera con la reconstrucción de la lista.
+
+Entrega para revisión: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/pull/32 (borrador). Los checks del PR conservan la evidencia de CI para cada revisión; el resultado final se enlaza allí. Esta documentación no certifica los criterios de integración pendientes.
 
 Pendientes de integración: API y PR de Javier, conexión de Kenneth, revisión humana del grupo #2, pruebas reales de sincronización con publicaciones de propietarios y cierre/reapertura de la aplicación por Víctor. Estos criterios generales de #28 no se marcan como cumplidos en esta preparación.
