@@ -26,11 +26,13 @@ class OwnerAccommodationFilterNotifier
   }
 }
 
-final myAccommodationsProvider = FutureProvider<List<AccommodationRecord>>((
-  ref,
-) {
-  final filter = ref.watch(ownerAccommodationFilterProvider);
-  ref.watch(sharedAccommodationRevisionProvider);
-  final repository = ref.watch(sharedAccommodationRepositoryProvider);
-  return SharedOwnerAccommodationReader(repository).query(filter);
-});
+final myAccommodationsProvider = FutureProvider<List<AccommodationRecord>>(
+  (ref) {
+    final filter = ref.watch(ownerAccommodationFilterProvider);
+    ref.watch(sharedAccommodationRevisionProvider);
+    final repository = ref.watch(sharedAccommodationRepositoryProvider);
+    return SharedOwnerAccommodationReader(repository).query(filter);
+  },
+  // El error permanece visible hasta que Reintentar invalida este provider.
+  retry: (_, _) => null,
+);

@@ -95,6 +95,10 @@ void main() {
         container.read(myAccommodationsProvider.future),
         throwsStateError,
       );
+      expect(repository.requestedQueries, hasLength(1));
+      await Future<void>.delayed(const Duration(milliseconds: 750));
+      expect(container.read(myAccommodationsProvider).hasError, isTrue);
+      expect(repository.requestedQueries, hasLength(1));
       container.invalidate(myAccommodationsProvider);
       expect(await container.read(myAccommodationsProvider.future), isEmpty);
       expect(repository.requestedQueries, hasLength(2));
