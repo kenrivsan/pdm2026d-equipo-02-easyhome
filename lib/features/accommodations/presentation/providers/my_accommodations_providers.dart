@@ -1,16 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/owner_accommodation_repository.dart';
-import '../../data/owner_accommodation_store_read_adapter.dart';
-import '../../data/owner_accommodation_store.dart';
+import '../../data/repositories/shared_owner_accommodation_reader.dart';
 import '../../domain/entities/accommodation.dart';
+import '../../domain/entities/accommodation_record.dart';
 import '../../domain/entities/owner_accommodation_filter.dart';
-
-final ownerAccommodationRepositoryProvider =
-    Provider<OwnerAccommodationRepository>(
-      (ref) =>
-          OwnerAccommodationStoreReadAdapter(OwnerAccommodationStore.instance),
-    );
+import 'shared_accommodation_providers.dart';
 
 final ownerAccommodationFilterProvider = NotifierProvider<
   OwnerAccommodationFilterNotifier,
@@ -23,6 +17,7 @@ class OwnerAccommodationFilterNotifier
   OwnerAccommodationFilter build() => const OwnerAccommodationFilter();
 
   void selectType(AccommodationType? type) {
+    if (state.type == type) return;
     state = OwnerAccommodationFilter(type: type);
   }
 
@@ -31,10 +26,11 @@ class OwnerAccommodationFilterNotifier
   }
 }
 
-final myAccommodationsProvider = FutureProvider<List<OwnerAccommodation>>((
+final myAccommodationsProvider = FutureProvider<List<AccommodationRecord>>((
   ref,
 ) {
   final filter = ref.watch(ownerAccommodationFilterProvider);
-  final repository = ref.watch(ownerAccommodationRepositoryProvider);
-  return repository.getOwnerAccommodations(type: filter.type);
+  ref.watch(sharedAccommodationRevisionProvider);
+  final repository = ref.watch(sharedAccommodationRepositoryProvider);
+  return SharedOwnerAccommodationReader(repository).query(filter);
 });
