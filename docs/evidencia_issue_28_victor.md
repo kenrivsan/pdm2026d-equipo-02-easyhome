@@ -133,3 +133,9 @@ Pendiente:
 - Verificar sincronizacion y persistencia real.
 - Comprobar funcionamiento al reiniciar la aplicacion.
 
+
+## 2026-11-05 - Entrega final de catalogo, PR #33
+
+Base de preparacion: 8c88063 mas historial de Roberth d82a432, sin rama #35 ni pantalla de propietario. Esta entrega por separado pasa 100 pruebas, formato de 70 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. No confundir con las 116 pruebas de la preparacion conjunta.
+
+El almacenamiento #34 debe integrarse primero a main. Luego este PR del grupo #1 requiere CI y revision humana del grupo #2. La entrega del propietario tendra un PR final separado. La validacion manual de borrado/restauracion tras cerrar el navegador se documentara sobre la preparacion conjunta y no se sustituye por REAL08.

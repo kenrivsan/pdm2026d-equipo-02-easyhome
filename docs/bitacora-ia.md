@@ -177,3 +177,10 @@
 - No se modificaron ResultsPage ni el almacenamiento.
 - Pendiente: validar integracion y persistencia real.
 - Las pruebas no certifican aun el issue #28 completo.
+
+## 2026-11-05 - Kenneth: preparacion final del catalogo para PR #33
+
+- Se preparo un worktree desde 8c88063 y se integro el historial d82a432 de aceptacion de Roberth mediante merge, sin incorporar la rama del propietario. Conflicto unico de bitacora resuelto conservando ambas entradas. Las siete pruebas de Victor permanecen en un solo archivo.
+- Validacion propia de esta entrega: 100 pruebas aprobadas, formato de 70 archivos sin cambios, flutter analyze --no-pub sin problemas y flutter build web --no-pub --no-web-resources-cdn aprobado; aviso Cupertino preexistente. No se publica el ajuste automatico de pubspec.lock producido por el SDK local.
+- Se actualiza la rama remota feat/28-filtro solo mediante avance normal, manteniendo el PR #33 y su base main. El historial del almacenamiento #34 es ancestro; sigue requiriendo su revision e integracion humana. No se hace merge a main ni se cierran issues.
+- La descripcion final del PR incluye la pregunta de key y separa resultados locales de CI/revision y cierre/reapertura. El proceso final requiere otro PR del propietario sobre esta base; no se sustituyen dos entregas de parejas por una sola.
