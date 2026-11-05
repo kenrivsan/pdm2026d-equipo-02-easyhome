@@ -154,3 +154,39 @@
 - Verificacion: 83 pruebas aprobadas, flutter analyze sin problemas, compilacion web --no-pub --no-web-resources-cdn aprobada. Aviso de fuente Cupertino no bloqueante. Formato aplicado a los tres archivos senalados. No se afirma CI remoto de esta rama.
 - Prueba manual automatizada con Playwright en perfil propio persistente y origen fijo http://127.0.0.1:8093: publicacion desde formulario de Casa S15 Integracion, precio 1000; aparece en catalogo. Despues de recargar y de cerrar/reabrir completamente el navegador permanece el registro owner-1793884789486000, sequence 3, con los mismos datos. Consola: cero errores y advertencias. Se uso compilacion release con recursos locales; no se reprodujo ni se determino la causa de la pantalla blanca reportada bajo flutter run.
 - Pendientes: Mis alojamientos aun usa OwnerAccommodationStore; no se declara sincronizacion completa. La operacion para incorporar origin/feat/29-filtro fue rechazada en el control de permisos y no se ejecuto. No se recreo el trabajo de Emmanuel ni se sorteo ese rechazo. Las siete pruebas de Victor aun no estan incorporadas. PR #34 sigue abierto. No se cerraron issues ni se hizo merge a main.
+
+## 2026-11-04 - Issue #29: contrato y filtro aislado
+
+- Herramienta: Codex.
+- Solicitud: implementar el listado del grupo #2 en `feat/29-filtro`, respetando la coordinación del grupo #1.
+- Inspección: `README.md`, `docs/architecture.md`, `docs/state-and-data.md`, código de `MyAccommodationsPage`, `OwnerAccommodationStore`, alta y catálogo; issues #27, #28 y #29; historial y estado local/remoto de `main`.
+- Confirmación GitHub: `main` apunta al merge 58166bf del PR #30. Rama local `feat/29-filtro` creada desde ese commit.
+- Estado compartido: #27 no tiene comentarios con acuerdo de almacenamiento. El store actual solo agrega en memoria, usa tipo de texto y carece de consulta filtrada, borrado y restauración.
+- Contrato propuesto en `owner_accommodation_repository.dart`: consulta asíncrona filtrada por `AccommodationType?`; borrar por id y confirmar solo al persistir; restaurar el objeto completo con el mismo id de forma idempotente; catálogo y listado leen la misma fuente de verdad. No se publicó comentario en GitHub.
+- Implementación aislada: filtro inmutable con igualdad, Notifier Riverpod y FutureProvider dependiente de `ref.watch` del filtro y contrato inyectable. Se añadieron pruebas de igualdad, no reconsulta con el mismo filtro, consulta al cambiar, recuperación ante error y protección ante respuesta tardía.
+- Propuesta descartada: adaptar ahora `OwnerAccommodationStore` o `ResultsPage` unilateralmente. El issue #29 exige acuerdo primero y ambas piezas son compartidas con el grupo #1; la implementación queda aislada hasta acordar.
+- Limitaciones: los adjuntos `Lab4 D.pdf` y retroalimentación docente no estaban disponibles en el workspace en esta sesión. No se afirma persistencia tras reinicio; el store existente es solo memoria.
+- Pendiente: acuerdo en #27; adaptador persistente compatible con web; UI del listado, Deshacer y pruebas de widgets/integración; validaciones Flutter y entrega/PR.
+
+### Validación local del avance aislado
+
+- Corrección: se reemplazaron imports relativos de `lib/` por imports `package:` después de que `flutter analyze` señaló esos avisos. La ejecución inicial también regeneró `pubspec.lock` y añadió exclusiones automáticas en `analysis_options.yaml`; ambos archivos se restauraron sin conservar cambios.
+- Formato: `dart format --output=none --set-exit-if-changed` en los cuatro archivos Dart nuevos, 0 cambios pendientes.
+- `flutter analyze --no-pub`: No issues found.
+- `flutter test --no-pub`: 21 pruebas aprobadas, incluyendo 4 nuevas de filtro/provider.
+- `flutter build web --no-pub`: finalizado correctamente. Flutter mostró los avisos existentes de `CupertinoIcons` no incluida y recomendación del dry run WASM; no se cambió `pubspec` para silenciarlos.
+- Estas comprobaciones cubren solo el avance aislado; no acreditan aún UI de Mis alojamientos, borrado/Deshacer, persistencia, sincronización del catálogo ni cumplimiento total del issue #29.
+- Ampliación del chequeo de formato: `dart format --output=none --set-exit-if-changed lib test`, 40 archivos, 0 cambios.
+
+## 2026-11-04 - Issue #29: UI aislada de Mis alojamientos
+
+- Implementación: `MyAccommodationsPage` ahora usa Riverpod y el provider dependiente del filtro; agrega Todos/Apartamento/Pensionado, estado de carga, error con Reintentar, vacío sin publicaciones con acción Agregar y vacío filtrado con acción Limpiar. Se conservan las tarjetas y se actualiza la consulta al volver de publicar.
+- Adaptación temporal: se agregó `OwnerAccommodationStoreReadAdapter`, de solo lectura, sin editar `OwnerAccommodationStore`. Mapea el tipo al enum del dominio y consulta los registros existentes. Borrar/restaurar lanzan `UnsupportedError` hasta el acuerdo de #27; no se ofrecen acciones de borrado todavía.
+- Pruebas widget nuevas con repositorio falso: carga/datos, filtro y visibilidad, vacío inicial/Agregar, vacío por filtro/Limpiar y error/Reintentar.
+- `dart format --output=none --set-exit-if-changed lib test`: 42 archivos, 0 cambios.
+- `flutter analyze --no-pub`: No issues found.
+- `flutter test --no-pub`: 26 pruebas aprobadas.
+- `flutter build web --no-pub`: finalizado correctamente; Flutter mostró el aviso WASM dry run y la referencia existente a `CupertinoIcons` sin asset.
+- Pendiente de coordinación: no se modificaron catálogo ni almacenamiento compartido. El adaptador sigue siendo temporal/en memoria y no acredita persistencia al cerrar y abrir la app. Esperar acuerdo de #27 para implementar CRUD durable y sincronización del mismo origen de datos con el catálogo.
+- Corrección de integración de altas: al crear una nueva instancia de la página se invalida la consulta para incluir publicaciones hechas previamente desde el panel; volver de Agregar también invalida la consulta. La reconstrucción de la página no invalida el provider.
+- Validación tras este ajuste: formato global `lib test` (42 archivos, 0 cambios), análisis sin problemas, suite completa (26 aprobadas) y compilación web completada. `git diff --check` limpio; sin commit ni PR.
