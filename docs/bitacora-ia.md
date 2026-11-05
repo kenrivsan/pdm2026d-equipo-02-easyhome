@@ -62,3 +62,17 @@
 - Corrección durante pruebas: la pantalla de login tiene dos textos INICIAR SESIÓN; se seleccionó explícitamente el ElevatedButton para probar la entrada real.
 - Validación: 42 pruebas aprobadas; flutter analyze sin problemas; formato de 50 archivos sin cambios; git diff --check sin errores; compilación web completada, con el aviso preexistente de fuente CupertinoIcons no incluida.
 - Pendiente: revisar la API y el PR reales del grupo #2 y conectar su adaptador definitivo; integrar el componente de Roberth y validar Deshacer/errores/persistencia con Víctor. No cerrar #28 ni hacer merge automático. No se modificaron MyAccommodationsPage, OwnerAccommodationStore ni dependencias.
+
+## 2026-11-04 - QA de aceptacion issue #28 - Victor
+
+- Herramienta utilizada: ChatGPT.
+- Se revisaron los componentes del PR #32 y el contrato del PR #34.
+- Se prepararon 7 pruebas de aceptacion con fuente controlada.
+- Resultado individual: 7 pruebas aprobadas.
+- Suite completa: 49 pruebas aprobadas.
+- flutter analyze: sin problemas.
+- flutter build web: compilacion exitosa.
+- git diff --check: sin errores.
+- No se modificaron ResultsPage ni el almacenamiento.
+- Pendiente: validar integracion y persistencia real.
+- Las pruebas no certifican aun el issue #28 completo.
