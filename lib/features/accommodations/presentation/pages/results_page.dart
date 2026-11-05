@@ -6,6 +6,9 @@ import '../../../../app/theme/app_theme.dart';
 import '../../domain/entities/accommodation.dart';
 import '../controllers/accommodation_search_controller.dart';
 import '../controllers/catalog_providers.dart';
+import '../controllers/catalog_deletion_provider.dart';
+import '../widgets/catalog_dismissible.dart';
+import '../widgets/catalog_undo_host.dart';
 import '../widgets/catalog_filter_bar.dart';
 import '../widgets/catalog_results_section.dart';
 import 'accommodation_detail_page.dart';
@@ -26,8 +29,9 @@ class ResultsPage extends ConsumerWidget {
     });
     final results = ref.watch(catalogResultsProvider);
     final accommodations = results.asData?.value;
+    final deletionController = ref.watch(catalogDeletionControllerProvider);
 
-    return Scaffold(
+    final page = Scaffold(
       appBar: AppBar(title: const Text('Resultados de búsqueda')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -220,14 +224,24 @@ class ResultsPage extends ConsumerWidget {
                 const SizedBox(height: 14),
 
                 CatalogResultsSection(
-                  itemBuilder:
-                      (context, accommodation) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _AccommodationCard(
-                          key: ValueKey(accommodation.id),
-                          accommodation: accommodation,
-                        ),
-                      ),
+                  itemBuilder: (context, accommodation) {
+                    final card = _AccommodationCard(
+                      key: ValueKey(accommodation.id),
+                      accommodation: accommodation,
+                    );
+                    return Padding(
+                      key: ValueKey(accommodation.id),
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child:
+                          deletionController == null
+                              ? card
+                              : CatalogDismissible<Object>(
+                                alojamiento: accommodation,
+                                controller: deletionController,
+                                child: card,
+                              ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -235,6 +249,11 @@ class ResultsPage extends ConsumerWidget {
         ),
       ),
     );
+    // El host vive fuera de la consulta y no se desmonta al filtrar, cargar,
+    // mostrar errores o quedarse sin filas mientras existe una operación.
+    return deletionController == null
+        ? page
+        : CatalogUndoHost<Object>(controller: deletionController, child: page);
   }
 }
 
