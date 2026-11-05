@@ -89,8 +89,9 @@ void main() {
         final container = ProviderScope.containerOf(
           tester.element(find.byType(LoginPage)),
         );
-        final owner =
-            container.read(ownerAccommodationDeletionControllerProvider)!;
+        final owner = container.read(
+          ownerAccommodationDeletionControllerProvider,
+        );
         final catalog = container.read(catalogDeletionControllerProvider)!;
         expect(owner, isNot(same(catalog)));
         expect(
@@ -161,8 +162,9 @@ void main() {
         final container = ProviderScope.containerOf(
           tester.element(find.byType(LoginPage)),
         );
-        final owner =
-            container.read(ownerAccommodationDeletionControllerProvider)!;
+        final owner = container.read(
+          ownerAccommodationDeletionControllerProvider,
+        );
         final events = <CatalogDeletionEvent<Object>>[];
         final revisions = <int>[];
         final subscription = owner.events.listen(events.add);

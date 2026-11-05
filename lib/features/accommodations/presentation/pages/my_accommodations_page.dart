@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/accommodation_deletion_providers.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../domain/entities/accommodation.dart';
-import '../../domain/entities/deleted_accommodation.dart';
-import '../controllers/catalog_deletion_controller.dart';
 import '../providers/my_accommodations_providers.dart';
-import '../providers/shared_accommodation_providers.dart';
 import '../widgets/catalog_dismissible.dart';
 import '../widgets/catalog_undo_host.dart';
 import 'add_accommodation_page.dart';
@@ -20,32 +18,16 @@ class MyAccommodationsPage extends ConsumerStatefulWidget {
 }
 
 class _MyAccommodationsPageState extends ConsumerState<MyAccommodationsPage> {
-  late final CatalogDeletionController<DeletedAccommodation>
-  _deletionController;
-
-  @override
-  void initState() {
-    super.initState();
-    final repository = ref.read(sharedAccommodationRepositoryProvider);
-    _deletionController = CatalogDeletionController<DeletedAccommodation>(
-      deleteById: repository.deleteById,
-      restore: repository.restore,
-    );
-  }
-
-  @override
-  void dispose() {
-    _deletionController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final deletionController = ref.watch(
+      ownerAccommodationDeletionControllerProvider,
+    );
     final filter = ref.watch(ownerAccommodationFilterProvider);
     final accommodations = ref.watch(myAccommodationsProvider);
 
-    return CatalogUndoHost<DeletedAccommodation>(
-      controller: _deletionController,
+    return CatalogUndoHost<Object>(
+      controller: deletionController,
       child: Scaffold(
         appBar: AppBar(title: const Text('Mis alojamientos')),
         body: Column(
@@ -114,9 +96,9 @@ class _MyAccommodationsPageState extends ConsumerState<MyAccommodationsPage> {
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
-                      return CatalogDismissible<DeletedAccommodation>(
+                      return CatalogDismissible<Object>(
                         alojamiento: item.toAccommodation(),
-                        controller: _deletionController,
+                        controller: deletionController,
                         child: Card(
                           margin: const EdgeInsets.only(bottom: 14),
                           child: Padding(

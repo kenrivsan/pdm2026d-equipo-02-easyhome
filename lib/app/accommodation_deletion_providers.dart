@@ -6,10 +6,10 @@ import '../features/accommodations/presentation/providers/shared_accommodation_p
 
 /// Capacidad de Mis alojamientos, inyectada por EasyHomeApp.
 /// Cada pantalla tiene su propio controller y host; ambas escriben en el mismo
-/// repositorio. Los tests aislados pueden mantener la pantalla en solo lectura.
+/// repositorio. El provider tambien permite montar la pantalla aisladamente.
 final ownerAccommodationDeletionControllerProvider =
-    Provider<CatalogDeletionController<Object>?>(
-      (ref) => null,
+    Provider<CatalogDeletionController<Object>>(
+      createSharedAccommodationDeletionController,
       dependencies: const [],
     );
 
