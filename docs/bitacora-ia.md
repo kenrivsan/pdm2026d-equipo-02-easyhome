@@ -38,3 +38,15 @@
 - **Criterio humano:** mantener pruebas separadas del código productivo del equipo y no considerar aprobados los criterios de borrado, Deshacer o persistencia hasta ejecutarlos.
 - **Resultados observados en PowerShell antes de incorporar las pruebas nuevas:** `flutter pub get` correcto; `flutter test` con 17 pruebas aprobadas; `flutter build web` correcto con avisos no bloqueantes.
 - **Pendiente:** ejecutar formato, `flutter analyze`, nuevas pruebas y validar requisitos finales sobre `feat/28-filtro`, incluyendo CI y capturas.
+
+## 2026-11-04 — Preparación de borrado y Deshacer (Roberth, #28)
+
+- Herramienta: Codex; asistencia para inspección, diseño, implementación, pruebas y documentación. Las revisiones de IA no sustituyen la revisión humana del grupo #2.
+- Fuentes: código e historial del repositorio autorizado, issues #27/#28 y comentarios de aceptación, PR #30/#31 y sus revisiones, evidencia de Víctor y rama feat/28-filtro. El usuario confirmó que el PDF y la retroalimentación externa no están en esta PC nueva; no se inventó su contenido.
+- Cambios: controller genérico con callbacks del contrato acordado, wrapper Dismissible por ID, host de SnackBars, falso exclusivo de pruebas y evidencia. Sin editar ResultsPage, OwnerAccommodationStore ni persistencia; sin crear entidades definitivas de Javier. La integración requiere su API publicada y coordinación con Kenneth.
+- Decisiones: conservar el snapshot por identidad; encolar avisos por operación; bloquear doble borrado/restauración; informar fallos y reintentar restauración; dejar que la consulta tras changes confirmado retire la fila, sin eliminación optimista ni onDismissed con escritura.
+- Correcciones: la primera prueba detectó cierre incorrecto de SnackBars encolados al desmontar. Se sustituyó por un ScaffoldMessenger propio por pantalla. Se agregó expiración explícita del SnackBar con acción, se ajustó la espera de animación del gesto en la prueba y se excluyó el Dismissible interno del SnackBar del conteo de tarjetas. No se suprimieron excepciones de UI.
+- Propuestas descartadas: duplicar persistencia, fabricar snapshots desde la tarjeta o su índice filtrado, sustituir el SnackBar anterior y modificar la pantalla de Kenneth antes de coordinar. Se descartaron cambios automáticos del SDK en configuración/dependencias.
+- Coordinación: comentario publicado en #28 para Kenneth, Javier y Víctor; conector de escritura devolvió 403 y se usó GitHub CLI autenticado como roberdeleon.
+- Validación local: Flutter 3.47.7 / Dart 3.13.5; formato 41 archivos sin cambios, análisis sin problemas, suite completa con 33 pruebas aprobadas (12 nuevas). El CI existente verifica Flutter 3.44.8. Evidencia y pendientes en docs/evidencia_issue_28_borrado.md.
+- Pendiente de aceptación general: API real, integración de ResultsPage, sincronización con publicaciones de propietarios y verificación persistente tras cerrar/abrir. No se cierra #28 ni se hace merge automático.
