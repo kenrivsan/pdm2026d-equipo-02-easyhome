@@ -11,99 +11,75 @@ import 'package:easyhome/features/accommodations/presentation/controllers/accomm
 import 'package:easyhome/features/accommodations/presentation/pages/results_page.dart';
 
 void main() {
-  testWidgets(
-    'muestra un mensaje cuando no hay alojamientos disponibles',
-    (WidgetTester tester) async {
-      final controller = AccommodationSearchController(
-        accommodationRepository: AccommodationRepositoryImpl(
-          InMemoryAccommodationDataSource(),
-        ),
-        locationRepository: LocationRepositoryImpl(
-          InMemoryLocationDataSource(),
-        ),
-      );
+  testWidgets('muestra un mensaje cuando no hay alojamientos disponibles', (
+    WidgetTester tester,
+  ) async {
+    final controller = AccommodationSearchController(
+      accommodationRepository: AccommodationRepositoryImpl(
+        InMemoryAccommodationDataSource(),
+      ),
+      locationRepository: LocationRepositoryImpl(InMemoryLocationDataSource()),
+    );
 
-      addTearDown(controller.dispose);
+    addTearDown(controller.dispose);
 
-      await controller.loadData();
+    await controller.loadData();
 
-      controller.selectDepartment('guatemala');
-      controller.selectUniversity('usac-central');
-      controller.selectType(AccommodationType.apartment);
+    controller.selectDepartment('guatemala');
+    controller.selectUniversity('usac-central');
+    controller.selectType(AccommodationType.apartment);
 
-      expect(controller.filteredAccommodations, isEmpty);
+    expect(controller.filteredAccommodations, isEmpty);
 
-      await tester.pumpWidget(
-        ChangeNotifierProvider<AccommodationSearchController>.value(
-          value: controller,
-          child: const MaterialApp(
-            home: ResultsPage(),
-          ),
-        ),
-      );
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AccommodationSearchController>.value(
+        value: controller,
+        child: const MaterialApp(home: ResultsPage()),
+      ),
+    );
 
-      expect(
-        find.text(
-          'No se encontraron alojamientos disponibles para esta búsqueda.',
-        ),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(
+      find.text(
+        'No se encontraron alojamientos disponibles para esta búsqueda.',
+      ),
+      findsOneWidget,
+    );
+  });
 
-  testWidgets(
-    'abre el detalle al seleccionar un alojamiento',
-    (WidgetTester tester) async {
-      final controller = AccommodationSearchController(
-        accommodationRepository: AccommodationRepositoryImpl(
-          InMemoryAccommodationDataSource(),
-        ),
-        locationRepository: LocationRepositoryImpl(
-          InMemoryLocationDataSource(),
-        ),
-      );
+  testWidgets('abre el detalle al seleccionar un alojamiento', (
+    WidgetTester tester,
+  ) async {
+    final controller = AccommodationSearchController(
+      accommodationRepository: AccommodationRepositoryImpl(
+        InMemoryAccommodationDataSource(),
+      ),
+      locationRepository: LocationRepositoryImpl(InMemoryLocationDataSource()),
+    );
 
-      addTearDown(controller.dispose);
+    addTearDown(controller.dispose);
 
-      await controller.loadData();
+    await controller.loadData();
 
-      controller.selectDepartment('quetzaltenango');
-      controller.selectUniversity('mesoamericana-quetzaltenango');
+    controller.selectDepartment('quetzaltenango');
+    controller.selectUniversity('mesoamericana-quetzaltenango');
 
-      await tester.pumpWidget(
-        ChangeNotifierProvider<AccommodationSearchController>.value(
-          value: controller,
-          child: const MaterialApp(
-            home: ResultsPage(),
-          ),
-        ),
-      );
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AccommodationSearchController>.value(
+        value: controller,
+        child: const MaterialApp(home: ResultsPage()),
+      ),
+    );
 
-      expect(
-        find.text('Apartamento para estudiantes'),
-        findsOneWidget,
-      );
+    expect(find.text('Apartamento para estudiantes'), findsOneWidget);
 
-      await tester.tap(
-        find.text('Apartamento para estudiantes'),
-      );
+    await tester.tap(find.text('Apartamento para estudiantes'));
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      expect(
-        find.text('Detalle del alojamiento'),
-        findsOneWidget,
-      );
+    expect(find.text('Detalle del alojamiento'), findsOneWidget);
 
-      expect(
-        find.text('Zona 3, Quetzaltenango'),
-        findsOneWidget,
-      );
+    expect(find.text('Zona 3, Quetzaltenango'), findsOneWidget);
 
-      expect(
-        find.text('Persona anfitriona de ejemplo'),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(find.text('Persona anfitriona de ejemplo'), findsOneWidget);
+  });
 }

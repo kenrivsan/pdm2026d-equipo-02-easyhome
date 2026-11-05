@@ -80,7 +80,7 @@ class OwnerHomePage extends StatelessWidget {
                   title: 'Agregar alojamiento',
                   subtitle: 'Publica un apartamento o pensionado.',
                   onTap: () async {
-                  final publicado = await Navigator.push<bool>(
+                    final publicado = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const AddAccommodationPage(),

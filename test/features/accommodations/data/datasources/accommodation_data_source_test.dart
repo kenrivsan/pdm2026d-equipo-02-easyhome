@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:easyhome/features/accommodations/data/datasources/accommodation_data_source.dart';
 import 'package:easyhome/features/accommodations/domain/entities/accommodation.dart';
+
 void main() {
   group('InMemoryAccommodationDataSource', () {
     late InMemoryAccommodationDataSource dataSource;
@@ -20,8 +21,7 @@ void main() {
 
       expect(
         accommodations.any(
-          (accommodation) =>
-              accommodation.type == AccommodationType.apartment,
+          (accommodation) => accommodation.type == AccommodationType.apartment,
         ),
         isTrue,
       );
@@ -38,9 +38,10 @@ void main() {
     test('incluye alojamientos de diferentes departamentos', () async {
       final accommodations = await dataSource.getAccommodations();
 
-      final departmentIds = accommodations
-          .map((accommodation) => accommodation.departmentId)
-          .toSet();
+      final departmentIds =
+          accommodations
+              .map((accommodation) => accommodation.departmentId)
+              .toSet();
 
       expect(departmentIds.length, greaterThan(1));
     });

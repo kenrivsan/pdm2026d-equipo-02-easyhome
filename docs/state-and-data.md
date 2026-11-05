@@ -1,5 +1,18 @@
 # Estado y acceso a datos durante M1
 
+## Evolución S15
+
+La base S15 incorpora `flutter_riverpod` para el estado de navegación:
+`AppNavigation` es un `Notifier<AppTab>` y `AppShell` observa su provider con
+`ref.watch`, conservando las pantallas en un `IndexedStack`. `EasyHomeApp`
+incluye un `ProviderScope` para ese estado.
+
+El controlador de búsqueda del MVP se conserva temporalmente con `provider`.
+Los PR de filtros S15 deben incorporar filtros inmutables en Riverpod Notifier
+y providers de listas que consulten el repositorio mediante `ref.watch` del
+filtro. El filtrado actual del MVP por sí solo no satisface esa parte de S15.
+La coordinación de S15 se centraliza en el issue #27 de Easy Home.
+
 ## Decisión
 
 Easy Home utilizará `Provider` con un `ChangeNotifier` por funcionalidad durante M1. La primera implementación es `AccommodationSearchController`, responsable del estado compartido de búsqueda, filtros y alojamientos disponibles.

@@ -1,0 +1,59 @@
+# Adaptado de roberdeleon/pdm-s14-ci-estados, commit 97285b4.
+# Easy Home tiene plataforma web; no tiene proyecto Android para compilar APK.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, 'feat/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  calidad:
+    name: Formato, análisis y pruebas
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.8
+          cache: true
+      - name: Dependencias
+        run: flutter pub get
+      - name: Formato
+        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Análisis estático
+        run: flutter analyze
+      - name: SQLite para pruebas de persistencia
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+      - name: Pruebas
+        run: flutter test --reporter expanded
+  web:
+    name: Compilación web
+    needs: calidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.8
+          cache: true
+      - run: flutter pub get
+      - run: flutter build web
+      - uses: actions/upload-artifact@v4
+        with:
+          name: easyhome-web-${{ github.sha }}
+          path: build/web
+          retention-days: 7

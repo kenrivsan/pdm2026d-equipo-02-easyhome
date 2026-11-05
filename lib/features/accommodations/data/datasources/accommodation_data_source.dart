@@ -18,9 +18,7 @@ class InMemoryAccommodationDataSource implements AccommodationDataSource {
       monthlyPrice: 1800,
       bathrooms: 1,
       sizeSquareMeters: 20,
-      imageUrls: [
-        'https://picsum.photos/seed/easyhome-usac/900/600',
-      ],
+      imageUrls: ['https://picsum.photos/seed/easyhome-usac/900/600'],
       contactName: 'Persona anfitriona de ejemplo',
       contactPhone: '5555-0101',
     ),
@@ -35,9 +33,7 @@ class InMemoryAccommodationDataSource implements AccommodationDataSource {
       monthlyPrice: 2200,
       bathrooms: 1,
       sizeSquareMeters: 45,
-      imageUrls: [
-        'https://picsum.photos/seed/easyhome-quetzaltenango/900/600',
-      ],
+      imageUrls: ['https://picsum.photos/seed/easyhome-quetzaltenango/900/600'],
       contactName: 'Persona anfitriona de ejemplo',
       contactPhone: '5555-0102',
       contactEmail: 'host@example.com',
@@ -53,9 +49,7 @@ class InMemoryAccommodationDataSource implements AccommodationDataSource {
       monthlyPrice: 2500,
       bathrooms: 1,
       sizeSquareMeters: 40,
-      imageUrls: [
-        'https://picsum.photos/seed/easyhome-guatemala/900/600',
-      ],
+      imageUrls: ['https://picsum.photos/seed/easyhome-guatemala/900/600'],
       contactName: 'Persona anfitriona de ejemplo',
       contactPhone: '5555-0103',
       available: false,

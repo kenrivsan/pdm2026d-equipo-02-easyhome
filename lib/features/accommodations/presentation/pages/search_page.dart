@@ -1,39 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../app/navigation/app_navigation.dart';
 import '../controllers/accommodation_search_controller.dart';
-import 'results_page.dart';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends ConsumerWidget {
   const SearchPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final controller = context.watch<AccommodationSearchController>();
 
     if (controller.isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (controller.errorMessage != null) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Buscar alojamiento'),
-        ),
-        body: Center(
-          child: Text(controller.errorMessage!),
-        ),
+        appBar: AppBar(title: const Text('Buscar alojamiento')),
+        body: Center(child: Text(controller.errorMessage!)),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Buscar alojamiento'),
-      ),
+      appBar: AppBar(title: const Text('Buscar alojamiento')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -43,13 +34,14 @@ class SearchPage extends StatelessWidget {
                 labelText: 'Departamento',
                 border: OutlineInputBorder(),
               ),
-              value: controller.selectedDepartmentId,
-              items: controller.departments.map((department) {
-                return DropdownMenuItem(
-                  value: department.id,
-                  child: Text(department.name),
-                );
-              }).toList(),
+              initialValue: controller.selectedDepartmentId,
+              items:
+                  controller.departments.map((department) {
+                    return DropdownMenuItem(
+                      value: department.id,
+                      child: Text(department.name),
+                    );
+                  }).toList(),
               onChanged: controller.selectDepartment,
             ),
             const SizedBox(height: 16),
@@ -58,30 +50,30 @@ class SearchPage extends StatelessWidget {
                 labelText: 'Universidad',
                 border: OutlineInputBorder(),
               ),
-              value: controller.selectedUniversityId,
-              items: controller.availableUniversities.map((university) {
-                return DropdownMenuItem(
-                  value: university.id,
-                  child: Text(university.name),
-                );
-              }).toList(),
-              onChanged: controller.selectedDepartmentId == null
-                  ? null
-                  : controller.selectUniversity,
+              initialValue: controller.selectedUniversityId,
+              items:
+                  controller.availableUniversities.map((university) {
+                    return DropdownMenuItem(
+                      value: university.id,
+                      child: Text(university.name),
+                    );
+                  }).toList(),
+              onChanged:
+                  controller.selectedDepartmentId == null
+                      ? null
+                      : controller.selectUniversity,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: controller.selectedDepartmentId != null &&
-                      controller.selectedUniversityId != null
-                  ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ResultsPage(),
-                        ),
-                      );
-                    }
-                  : null,
+              onPressed:
+                  controller.selectedDepartmentId != null &&
+                          controller.selectedUniversityId != null
+                      ? () {
+                        ref
+                            .read(appNavigationProvider.notifier)
+                            .select(AppTab.accommodations);
+                      }
+                      : null,
               child: const Text('Ver resultados'),
             ),
           ],

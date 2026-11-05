@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/navigation/app_navigation.dart';
 import '../../../../app/theme/app_theme.dart';
-import 'owner_home_page.dart';
-import 'search_page.dart';
 
-class AccommodationsPage extends StatelessWidget {
+class AccommodationsPage extends ConsumerWidget {
   const AccommodationsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -91,12 +91,9 @@ class AccommodationsPage extends StatelessWidget {
                             'Busca apartamentos y pensionados '
                             'cerca de tu universidad.',
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SearchPage(),
-                            ),
-                          );
+                          ref
+                              .read(appNavigationProvider.notifier)
+                              .select(AppTab.search);
                         },
                       ),
 
@@ -109,13 +106,17 @@ class AccommodationsPage extends StatelessWidget {
                             'Publica y administra tus '
                             'alojamientos disponibles.',
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const OwnerHomePage(),
-                            ),
-                          );
+                          ref
+                              .read(appNavigationProvider.notifier)
+                              .select(AppTab.owner);
                         },
+                      ),
+                      TextButton(
+                        onPressed:
+                            () => ref
+                                .read(appNavigationProvider.notifier)
+                                .select(AppTab.accommodations),
+                        child: const Text('Ver todos los alojamientos'),
                       ),
                     ],
                   ),

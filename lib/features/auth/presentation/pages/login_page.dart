@@ -1,8 +1,7 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_theme.dart';
-import '../../../accommodations/presentation/pages/accommodations_page.dart';
+import '../../../../app/navigation/app_shell.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -40,15 +39,11 @@ class _LoginPageState extends State<LoginPage> {
     if (correo == correoDemo && contrasena == contrasenaDemo) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => const AccommodationsPage(),
-        ),
+        MaterialPageRoute(builder: (context) => const AppShell()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Correo o contraseña incorrectos'),
-        ),
+        const SnackBar(content: Text('Correo o contraseña incorrectos')),
       );
     }
   }
@@ -61,9 +56,7 @@ class _LoginPageState extends State<LoginPage> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final alturaEncabezado =
-                (constraints.maxHeight * 0.38)
-                    .clamp(220.0, 300.0)
-                    .toDouble();
+                (constraints.maxHeight * 0.38).clamp(220.0, 300.0).toDouble();
 
             return SingleChildScrollView(
               child: Column(
@@ -76,10 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          AppTheme.navyDark,
-                          AppTheme.navy,
-                        ],
+                        colors: [AppTheme.navyDark, AppTheme.navy],
                       ),
                     ),
                     child: const Column(
@@ -132,8 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                   // Parte blanca del formulario.
                   ConstrainedBox(
                     constraints: BoxConstraints(
-                      minHeight:
-                          constraints.maxHeight - alturaEncabezado,
+                      minHeight: constraints.maxHeight - alturaEncabezado,
                     ),
                     child: Container(
                       width: double.infinity,
@@ -144,9 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Center(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: 360,
-                          ),
+                          constraints: const BoxConstraints(maxWidth: 360),
                           child: Form(
                             key: _formKey,
                             child: Column(
@@ -176,13 +163,10 @@ class _LoginPageState extends State<LoginPage> {
 
                                 TextFormField(
                                   controller: _correo,
-                                  keyboardType:
-                                      TextInputType.emailAddress,
+                                  keyboardType: TextInputType.emailAddress,
                                   decoration: const InputDecoration(
                                     labelText: 'Correo electrónico',
-                                    prefixIcon: Icon(
-                                      Icons.email_outlined,
-                                    ),
+                                    prefixIcon: Icon(Icons.email_outlined),
                                   ),
                                   validator: (valor) {
                                     final correo = valor?.trim() ?? '';
@@ -208,9 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                                   obscureText: !_mostrarContrasena,
                                   decoration: InputDecoration(
                                     labelText: 'Contraseña',
-                                    prefixIcon: const Icon(
-                                      Icons.lock_outline,
-                                    ),
+                                    prefixIcon: const Icon(Icons.lock_outline),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         _mostrarContrasena
@@ -226,8 +208,7 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   ),
                                   validator: (valor) {
-                                    if (valor == null ||
-                                        valor.isEmpty) {
+                                    if (valor == null || valor.isEmpty) {
                                       return 'Ingresa tu contraseña';
                                     }
                                     return null;
@@ -244,9 +225,7 @@ class _LoginPageState extends State<LoginPage> {
                                   height: 52,
                                   child: ElevatedButton(
                                     onPressed: _iniciarSesion,
-                                    child: const Text(
-                                      'INICIAR SESIÓN',
-                                    ),
+                                    child: const Text('INICIAR SESIÓN'),
                                   ),
                                 ),
 
