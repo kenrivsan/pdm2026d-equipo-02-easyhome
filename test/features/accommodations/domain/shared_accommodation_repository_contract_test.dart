@@ -253,6 +253,93 @@ void main() {
     },
   );
 
+  test('a failed initial read can be retried by the same repository', () async {
+    var initialLoads = 0;
+    repository = createRepository(
+      storageKey: 'test.initial-read.v1',
+      loadInitial: () async {
+        initialLoads++;
+        return _initialRecords;
+      },
+    );
+    final revisions = <int>[];
+    final subscription = repository.changes.listen(revisions.add);
+    addTearDown(subscription.cancel);
+
+    preferencePlatform.failNextRead = true;
+    await expectLater(
+      repository.query(const AccommodationQuery()),
+      throwsA(isA<StateError>()),
+    );
+    expect(initialLoads, 0);
+    expect(revisions, isEmpty);
+
+    final recovered = await repository.query(const AccommodationQuery());
+    expect(recovered.map((record) => record.id), ['a', 'b', 'c', 'd']);
+    expect(initialLoads, 1);
+    expect(revisions, isEmpty);
+  });
+
+  test(
+    'a failed initial seed write can be retried without exposing the seed',
+    () async {
+      const key = 'test.initial-write.v1';
+      var initialLoads = 0;
+      Future<List<AccommodationRecord>> loadInitial() async {
+        initialLoads++;
+        return _initialRecords;
+      }
+
+      repository = createRepository(storageKey: key, loadInitial: loadInitial);
+      final revisions = <int>[];
+      final subscription = repository.changes.listen(revisions.add);
+      addTearDown(subscription.cancel);
+
+      preferencePlatform.failNextWrite = true;
+      await expectLater(
+        repository.query(const AccommodationQuery()),
+        throwsA(isA<StateError>()),
+      );
+      expect(await SharedPreferencesAsync().getString(key), isNull);
+      expect(revisions, isEmpty);
+
+      final recovered = await repository.query(const AccommodationQuery());
+      expect(recovered.map((record) => record.id), ['a', 'b', 'c', 'd']);
+      expect(initialLoads, 2);
+      expect(revisions, isEmpty);
+
+      await repository.dispose();
+      repository = createRepository(storageKey: key, loadInitial: loadInitial);
+      expect(
+        (await repository.query(const AccommodationQuery())).map((r) => r.id),
+        ['a', 'b', 'c', 'd'],
+      );
+      expect(initialLoads, 2);
+    },
+  );
+
+  test('concurrent first queries share one initialization', () async {
+    var initialLoads = 0;
+    repository = createRepository(
+      storageKey: 'test.concurrent-initialization.v1',
+      loadInitial: () async {
+        initialLoads++;
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+        return _initialRecords;
+      },
+    );
+
+    final results = await Future.wait([
+      repository.query(const AccommodationQuery()),
+      repository.query(const AccommodationQuery(onlyOwned: true)),
+      repository.query(const AccommodationQuery()),
+    ]);
+    expect(initialLoads, 1);
+    expect(results[0], hasLength(4));
+    expect(results[1].map((record) => record.id), ['b']);
+    expect(results[2], hasLength(4));
+  });
+
   test(
     'errors and failed persistence leave memory and revisions unchanged',
     () async {
@@ -346,6 +433,19 @@ base class _FailingMemoryPreferences extends InMemorySharedPreferencesAsync {
   _FailingMemoryPreferences() : super.empty();
 
   bool failNextWrite = false;
+  bool failNextRead = false;
+
+  @override
+  Future<String?> getString(
+    String key,
+    SharedPreferencesOptions options,
+  ) async {
+    if (failNextRead) {
+      failNextRead = false;
+      throw StateError('simulated preference read failure');
+    }
+    return super.getString(key, options);
+  }
 
   @override
   Future<bool> setString(

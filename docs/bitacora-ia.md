@@ -73,3 +73,10 @@
 - Validación local del commit publicado: `dart format --output=none --set-exit-if-changed lib test` revisó 45 archivos, 0 cambios; `flutter analyze --no-pub` terminó sin problemas; `flutter test --no-pub --reporter expanded` aprobó 32 pruebas; `flutter build web --no-pub` produjo `build/web` con código 0. El aviso de fuente Cupertino no impidió la compilación.
 - Corrección de alcance: Flutter volvió a agregar exclusiones a `analysis_options.yaml` durante las verificaciones; se descartó ese cambio ajeno al PR. La página `MyAccommodationsPage` sigue leyendo el almacén anterior y su migración pertenece al PR de Emmanuel. La compilación web y las pruebas de recreación no equivalen a una prueba manual de cierre y reapertura en navegador.
 - Este PR prepara la API compartida; filtros, Dismissible y Deshacer de las dos pantallas siguen en los PR de cada grupo. No se atribuyen esos criterios a esta rama.
+
+## 2026-11-04 - Recuperación de inicialización fallida (revisión del PR #34)
+
+- Retroalimentación humana: el grupo detectó que el `Future` de inicialización quedaba fallido permanentemente si fallaba la primera lectura o la escritura de la siembra. La suite anterior no cubría esos dos caminos.
+- Corrección: la inicialización ahora empieza al primer uso, comparte un solo `Future` entre llamadas simultáneas y lo libera si falla. El siguiente uso reintenta en la misma instancia. El estado de la siembra se publica únicamente después de confirmar su escritura; los fallos no emiten revisiones.
+- Pruebas agregadas: recuperación tras lectura inicial fallida; recuperación tras escritura inicial fallida, comprobando que no queda dato guardado, que no hay revisiones y que una instancia nueva no duplica la siembra; consultas simultáneas comparten una sola inicialización.
+- Verificación tras la corrección: contrato aislado, 13 pruebas aprobadas; `dart format --output=none --set-exit-if-changed lib test`, 45 archivos y 0 cambios; `flutter analyze --no-pub`, sin problemas; `flutter test --no-pub --reporter expanded`, 35 pruebas aprobadas; `flutter build web --no-pub`, `Built build/web` con código 0. Pendiente el CI remoto del PR actualizado.

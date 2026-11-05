@@ -24,9 +24,7 @@ class SharedPreferencesAccommodationRepository
     required InitialAccommodationLoader loadInitialAccommodations,
     this.storageKey = defaultStorageKey,
   }) : _preferences = preferences,
-       _loadInitialAccommodations = loadInitialAccommodations {
-    _ready = _loadOrSeed();
-  }
+       _loadInitialAccommodations = loadInitialAccommodations;
 
   static const defaultStorageKey = 'easyhome.accommodations.v1';
   static const _schemaVersion = 1;
@@ -36,7 +34,7 @@ class SharedPreferencesAccommodationRepository
   final String storageKey;
   final StreamController<int> _changes = StreamController<int>.broadcast();
 
-  late final Future<void> _ready;
+  Future<void>? _ready;
   late _RepositoryState _state;
   Future<void> _writeQueue = Future<void>.value();
   Future<void>? _disposeFuture;
@@ -44,9 +42,20 @@ class SharedPreferencesAccommodationRepository
   @override
   Stream<int> get changes => _changes.stream;
 
+  Future<void> _ensureReady() =>
+      _ready ??= _loadOrSeed().catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        // A failed read or seed write must not poison subsequent operations.
+        // All callers of this attempt share the same Future and its failure.
+        _ready = null;
+        Error.throwWithStackTrace(error, stackTrace);
+      });
+
   @override
   Future<List<AccommodationRecord>> query(AccommodationQuery filter) async {
-    await _ready;
+    await _ensureReady();
     final state = _state;
     final matching =
         state.records.values
@@ -59,7 +68,7 @@ class SharedPreferencesAccommodationRepository
   @override
   Future<void> add(AccommodationRecord record) {
     return _enqueue(() async {
-      await _ready;
+      await _ensureReady();
       if (_state.records.containsKey(record.id) ||
           _state.deleted.values.any(
             (deleted) => deleted.record.id == record.id,
@@ -84,7 +93,7 @@ class SharedPreferencesAccommodationRepository
   @override
   Future<DeletedAccommodation> deleteById(String id) {
     return _enqueue(() async {
-      await _ready;
+      await _ensureReady();
       final stored = _state.records[id];
       if (stored == null) throw AccommodationNotFoundException(id);
 
@@ -111,7 +120,7 @@ class SharedPreferencesAccommodationRepository
   @override
   Future<void> restore(DeletedAccommodation deleted) {
     return _enqueue(() async {
-      await _ready;
+      await _ensureReady();
       final storedDeletion = _state.deleted[deleted.deletionToken];
       if (storedDeletion == null) {
         final active = _state.records[deleted.record.id];
