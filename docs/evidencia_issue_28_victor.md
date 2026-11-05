@@ -145,7 +145,7 @@ Verificacion conjunta real: 116 pruebas aprobadas; formato de 77 archivos sin ca
 | Navegacion, 1 | Notifier e IndexedStack; test/app/navigation_test.dart verifica destinos, Ver todos y scroll. Base de navegacion ya en main. | Comprobar regresiones al integrar toda la entrega a main. |
 | Filtro dependiente, 1.5 | catalog_providers.dart y my_accommodations_providers.dart observan filtros inmutables; catalogo conserva tipo/departamento/universidad; propietario consulta onlyOwned. Pruebas de filtro, vacio, error, consultas y respuestas tardias. | Aceptacion humana de ambos listados sobre el commit conjunto. |
 | Borrar y Deshacer, 1 | CatalogDismissible usa ValueKey(id), consulta confirma escritura; repositorio devuelve DeletedAccommodation original; errores y orden cubiertos en suites de ambos listados y prueba conjunta. | Navegador: cerrar/abrir con registro borrado y registro restaurado, ambos listados, mismo perfil y origen. |
-| Pruebas, 1 | Suite integrada: 115 aprobadas. Se preservan pruebas originales y se distinguen falsos, preferencias en memoria y archivo. | CI remoto del SHA conjunto y del resultado final en main. |
+| Pruebas, 1 | Suite integrada: 116 aprobadas. Se preservan pruebas originales y se distinguen falsos, preferencias en memoria y archivo. | CI remoto del SHA conjunto y del resultado final en main. |
 | Proceso Git, 0.5 | Historiales conservados, bitacora consolidada, PR #35 para propietario y #36 para aceptacion de catalogo, descripciones con pregunta de key. | Revision humana de otra pareja y entrega final mediante PR a main; no se afirma 5/5. |
 
 ### Orden propuesto de integracion, sujeto a revision humana
@@ -165,3 +165,7 @@ Regresion adicional del reporte de Roberth: cambiar la instancia del repositorio
 Base de preparacion: 8c88063 mas historial de Roberth d82a432, sin rama #35 ni pantalla de propietario. Esta entrega por separado pasa 100 pruebas, formato de 70 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. No confundir con las 116 pruebas de la preparacion conjunta.
 
 El almacenamiento #34 debe integrarse primero a main. Luego este PR del grupo #1 requiere CI y revision humana del grupo #2. La entrega del propietario tendra un PR final separado. La validacion manual de borrado/restauracion tras cerrar el navegador se documentara sobre la preparacion conjunta y no se sustituye por REAL08.
+
+## 2026-11-05 - Entrega final de propietario preparada
+
+feat/29-entrega-final preserva la preparacion dcf8259 y el catalogo final ee6fda3. Verificada por separado: 116 pruebas, formato de 77 archivos, analisis y web aprobados. El PR inicial debe comparar contra feat/28-filtro; luego main tras integrar el catalogo. CI del catalogo confirmado: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/actions/runs/42071848470 . CI de la preparacion dcf8259: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/actions/runs/42064370142 . El nuevo propietario requiere su propia ejecucion y revision humana.
