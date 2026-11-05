@@ -138,7 +138,7 @@ Pendiente:
 
 La rama codex/28-integracion-almacenamiento incluye los historiales de los PR #35 y #36, el ultimo ajuste 3c9a93a y una sola copia de las siete pruebas de Victor. El propietario usa ownerAccommodationDeletionControllerProvider; no conserva un controller local paralelo. Ambos controladores escriben sobre la misma instancia del repositorio.
 
-Verificacion conjunta real: 115 pruebas aprobadas; formato de 77 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. El test adicional en catalog_shared_storage_integration_test.dart recorre las dos pantallas reales: alta, borrado/Deshacer en ambos sentidos, datos/orden y controller correcto. El backend de preferencias de ese test es memoria controlada; REAL08 sigue siendo archivo y ninguna de esas pruebas equivale a reiniciar un navegador real.
+Verificacion conjunta real: 116 pruebas aprobadas; formato de 77 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. El test adicional en catalog_shared_storage_integration_test.dart recorre las dos pantallas reales: alta, borrado/Deshacer en ambos sentidos, datos/orden y controller correcto. El backend de preferencias de ese test es memoria controlada; REAL08 sigue siendo archivo y ninguna de esas pruebas equivale a reiniciar un navegador real.
 
 | Criterio PDF | Implementado y verificado localmente | Pendiente de entrega |
 |---|---|---|
@@ -156,3 +156,5 @@ Verificacion conjunta real: 115 pruebas aprobadas; formato de 77 archivos sin ca
 4. Tras la integracion humana, repetir CI sobre main y entregar en Moodle el enlace al repositorio. La retroalimentacion establece entrega tardia con penalizacion; no se modifican fechas.
 
 La pantalla blanca del entorno original de Victor sigue sin causa confirmada. Su reporte solo aporta comandos flutter run -d chrome --web-port 7357 y flutter run -d web-server --web-port 7357, URL http://localhost:7357, Chrome/Brave sin versiones/perfil confirmados ni primer error. Las reproducciones satisfactorias previas no prueban cual fue la causa original.
+
+Regresion adicional del reporte de Roberth: cambiar la instancia del repositorio sin desmontar Mis alojamientos conserva su State, sustituye el controller y aplica baja/Deshacer solo al repositorio nuevo. Prueba real de composicion con preferencias controladas, incluida en la ejecucion de 116. GitHub reconoce #35/#36 como integrados en la preparacion; main continua pendiente.

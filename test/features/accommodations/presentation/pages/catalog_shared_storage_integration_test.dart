@@ -349,4 +349,63 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  appTest(
+    'sustituir repositorio sin desmontar propietario escribe en la instancia vigente',
+    (tester) async {
+      final previous = create();
+      await mount(tester, previous);
+      final publication = ownerRecord('cambio-repositorio');
+      await previous.add(publication);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Propietario'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mis alojamientos'));
+      await tester.pumpAndSettle();
+      final ownerPage = find.byType(MyAccommodationsPage);
+      final originalState = tester.state(ownerPage);
+      final originalController = ProviderScope.containerOf(
+        tester.element(ownerPage),
+      ).read(ownerAccommodationDeletionControllerProvider);
+      final next = SharedPreferencesAccommodationRepository(
+        preferences: SharedPreferencesAsync(),
+        storageKey: 'kenneth.replacement.v1',
+        loadInitialAccommodations: () async => [publication],
+      );
+      repositories.add(next);
+      final root = ProviderScope.containerOf(
+        tester.element(find.byType(EasyHomeApp)),
+      );
+      root.updateOverrides([
+        sharedAccommodationRepositoryProvider.overrideWithValue(next),
+      ]);
+      await tester.pumpAndSettle();
+      expect(tester.state(ownerPage), same(originalState));
+      final current = ProviderScope.containerOf(tester.element(ownerPage));
+      expect(current.read(sharedAccommodationRepositoryProvider), same(next));
+      expect(
+        current.read(ownerAccommodationDeletionControllerProvider),
+        isNot(same(originalController)),
+      );
+      expect(find.text(publication.title), findsOneWidget);
+      await swipe(tester, publication.id);
+      expect(
+        await next.query(const AccommodationQuery(onlyOwned: true)),
+        isEmpty,
+      );
+      expect(await previous.query(const AccommodationQuery(onlyOwned: true)), [
+        publication,
+      ]);
+      await tester.tap(find.text('Deshacer'));
+      await tester.pumpAndSettle();
+      expect(await next.query(const AccommodationQuery(onlyOwned: true)), [
+        publication,
+      ]);
+      expect(await previous.query(const AccommodationQuery(onlyOwned: true)), [
+        publication,
+      ]);
+      expect(find.text(publication.title), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
