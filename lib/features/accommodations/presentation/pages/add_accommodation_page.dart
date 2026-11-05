@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../app/theme/app_theme.dart';
-import '../../data/owner_accommodation_store.dart';
+import '../../domain/entities/accommodation.dart';
+import '../../domain/entities/accommodation_record.dart';
 import '../controllers/accommodation_search_controller.dart';
+import '../providers/shared_accommodation_providers.dart';
 
-class AddAccommodationPage extends StatefulWidget {
+class AddAccommodationPage extends ConsumerStatefulWidget {
   const AddAccommodationPage({super.key});
 
   @override
-  State<AddAccommodationPage> createState() => _AddAccommodationPageState();
+  ConsumerState<AddAccommodationPage> createState() =>
+      _AddAccommodationPageState();
 }
 
-class _AddAccommodationPageState extends State<AddAccommodationPage> {
+class _AddAccommodationPageState extends ConsumerState<AddAccommodationPage> {
   final _formKey = GlobalKey<FormState>();
 
   final _name = TextEditingController();
@@ -27,6 +31,7 @@ class _AddAccommodationPageState extends State<AddAccommodationPage> {
   String _type = 'Apartamento';
   String? _departmentId;
   String? _universityId;
+  bool _isPublishing = false;
 
   @override
   void dispose() {
@@ -41,7 +46,8 @@ class _AddAccommodationPageState extends State<AddAccommodationPage> {
     super.dispose();
   }
 
-  void _publish() {
+  Future<void> _publish() async {
+    if (_isPublishing) return;
     if (!_formKey.currentState!.validate()) return;
 
     if (_departmentId == null || _universityId == null) {
@@ -51,27 +57,40 @@ class _AddAccommodationPageState extends State<AddAccommodationPage> {
       return;
     }
 
-    final controller = context.read<AccommodationSearchController>();
-
-    final accommodation = OwnerAccommodation(
+    final accommodation = AccommodationRecord(
       id: 'owner-${DateTime.now().microsecondsSinceEpoch}',
-      name: _name.text.trim(),
-      type: _type,
-      address: _address.text.trim(),
+      title: _name.text.trim(),
+      type:
+          _type == 'Apartamento'
+              ? AccommodationType.apartment
+              : AccommodationType.boardingHouse,
+      location: _address.text.trim(),
       departmentId: _departmentId!,
       universityIds: [_universityId!],
       monthlyPrice: double.parse(_price.text.trim().replaceAll(',', '.')),
       description: _description.text.trim(),
+      available: true,
       bathrooms: int.parse(_bathrooms.text.trim()),
       sizeSquareMeters: double.parse(_size.text.trim().replaceAll(',', '.')),
+      imageUrls: const [],
       contactName: _contactName.text.trim(),
       contactPhone: _contactPhone.text.trim(),
+      contactEmail: null,
+      isOwned: true,
     );
 
-    OwnerAccommodationStore.instance.add(accommodation);
-    controller.refreshAccommodations();
-
-    Navigator.pop(context, true);
+    setState(() => _isPublishing = true);
+    try {
+      await ref.read(sharedAccommodationRepositoryProvider).add(accommodation);
+      if (mounted) Navigator.pop(context, true);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo publicar el alojamiento: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _isPublishing = false);
+    }
   }
 
   @override
@@ -311,9 +330,19 @@ class _AddAccommodationPageState extends State<AddAccommodationPage> {
                   SizedBox(
                     height: 54,
                     child: ElevatedButton.icon(
-                      onPressed: _publish,
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Publicar alojamiento'),
+                      onPressed: _isPublishing ? null : _publish,
+                      icon:
+                          _isPublishing
+                              ? const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Icon(Icons.check_circle_outline),
+                      label: Text(
+                        _isPublishing ? 'Publicando…' : 'Publicar alojamiento',
+                      ),
                     ),
                   ),
                 ],
