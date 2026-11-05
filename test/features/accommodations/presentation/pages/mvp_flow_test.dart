@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
+import 'package:easyhome/features/accommodations/presentation/controllers/catalog_providers.dart';
+import '../../support/catalog_test_scope.dart';
 import 'package:provider/provider.dart';
 
 import 'package:easyhome/features/accommodations/data/datasources/accommodation_data_source.dart';
@@ -29,7 +31,10 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider<AccommodationSearchController>.value(
         value: controller,
-        child: const ProviderScope(child: MaterialApp(home: AppShell())),
+        child: CatalogTestScope(
+          controller: controller,
+          child: const MaterialApp(home: AppShell()),
+        ),
       ),
     );
 
@@ -83,7 +88,12 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(controller.selectedType, AccommodationType.apartment);
+    expect(
+      ProviderScope.containerOf(
+        tester.element(find.byType(AppShell)),
+      ).read(catalogFilterProvider).type,
+      AccommodationType.apartment,
+    );
 
     expect(find.text('Apartamento para estudiantes'), findsOneWidget);
 

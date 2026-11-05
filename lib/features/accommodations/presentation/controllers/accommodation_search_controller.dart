@@ -36,6 +36,17 @@ class AccommodationSearchController extends ChangeNotifier {
   final LocationRepository _locationRepository;
   StreamSubscription<int>? _changesSubscription;
 
+  /// Permite componer lectores de la misma fuente, sin crear otro repositorio.
+  AccommodationRepository get accommodationRepository {
+    final repository = _accommodationRepository;
+    if (repository == null) {
+      throw StateError(
+        'El controlador usa el repositorio compartido; no tiene fuente legada.',
+      );
+    }
+    return repository;
+  }
+
   List<Accommodation> _accommodations = const [];
   List<Department> _departments = const [];
   List<University> _universities = const [];

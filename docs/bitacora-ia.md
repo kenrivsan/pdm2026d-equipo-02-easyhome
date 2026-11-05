@@ -1,5 +1,15 @@
 # Bitácora de uso de IA
 
+## 2026-11-04 — Roberth: revisión de conexión #33 y desmontaje
+
+- Herramienta: Codex. Se revisaron #32, #33 (`343446f`), #34 (`09381fa`), su retroalimentación publicada, archivos de conexión, contrato y providers del repositorio real. El PDF S15/retroalimentación externa siguen ausentes; no se afirma haberlos leído.
+- Autoría/alcance: los commits originales de Roberth ya son ancestros de #33. No se repitieron ni se incorporó código de Kenneth a la rama de #32. Coordinación de archivos publicada antes de editar en #33, comentario 6650302698. Solo se modifica el controller propio, su test, bitácora y evidencia existentes; sin ResultsPage, almacenamiento, dependencias ni Mis alojamientos.
+- Hallazgo de integración: Kenneth mantiene el host fuera del Scaffold y estados de consulta, con controller independiente del filtro. La capacidad productiva sigue null hasta integrar #34. Las ocho pruebas originales de conexión pasan.
+- Reproducción: tres aserciones fallaron al comprobar IDs bloqueados tras desmontar durante borrado, fallo de restauración o cancelación antes de entregar el evento. La prueba anterior de desmontaje solo comprobaba ausencia de excepciones; se amplió para verificar también bloqueo y número de operaciones.
+- Corrección generada/revisada: liberar tickets cuando desaparece el último consumidor o termina una operación sin consumidor; conservar bloqueo durante la escritura/restauración pendiente. No se emiten éxitos ficticios ni se repiten escrituras. Nueva prueba de remontaje verifica Reintentar con el mismo snapshot; se descartó modificar el host o la pantalla para compensar el estado perdido del controller.
+- Validación: 36 pruebas en rama propia; 65 pruebas en copia aislada de #33 con únicamente controller/tests corregidos; formato 41 y 56 archivos, respectivamente, sin cambios; análisis sin problemas en ambas copias. No se publica esa copia ni se añade #34 a ninguna rama. El resultado de CI y commit incremental se comunican en #32/#33 al concluir.
+- Conexión futura: se documenta el tipo DeletedAccommodation con token/sequence y la necesidad de compartir instancia de repositorio entre lectura/callbacks. #34 sigue sin integrar; la conexión real y la validación persistente quedan pendientes de Kenneth/Víctor tras esa dependencia. No hay merge ni cierres automáticos.
+
 ## 2026-11-04 - Inicio S15 y base compartida
 
 - Herramienta: Codex.
@@ -38,6 +48,61 @@
 - **Criterio humano:** mantener pruebas separadas del código productivo del equipo y no considerar aprobados los criterios de borrado, Deshacer o persistencia hasta ejecutarlos.
 - **Resultados observados en PowerShell antes de incorporar las pruebas nuevas:** `flutter pub get` correcto; `flutter test` con 17 pruebas aprobadas; `flutter build web` correcto con avisos no bloqueantes.
 - **Pendiente:** ejecutar formato, `flutter analyze`, nuevas pruebas y validar requisitos finales sobre `feat/28-filtro`, incluyendo CI y capturas.
+
+## 2026-11-04 - Componentes aislados del catálogo, issue #28
+
+- Herramienta: Codex. Solicitud: continuar el prompt del grupo #1 mientras se acuerda la fuente compartida con el grupo #2.
+- Base: rama feat/28-filtro desde main con PR #31 integrado; se conservan las pruebas preliminares de Víctor.
+- Implementado: CatalogFilter inmutable con igualdad por valor; Notifier; puerto de lectura CatalogReader; FutureProvider con ref.watch del filtro y revisión; componentes de filtro y estados con Reintentar y limpiar filtros.
+- Corrección: los reintentos automáticos de Riverpod se deshabilitan solo para esta consulta, para que un error no genere consultas ocultas y la recuperación sea explícita con Reintentar.
+- Coordinación recibida del grupo #2: implementarán entidades, repositorio, persistencia y Agregar alojamiento, proponiendo SharedPreferencesAsync con JSON versionado y operación add. Se adapta el puerto de lectura del catálogo a Stream<int> de revisiones, sin añadir ni modificar sus dependencias.
+- Pruebas: filtro Todos/Apartamento/Pensionado, igualdad, conservación de ubicación, vacío y limpiar, carga, error/Reintentar, consultas repetidas, invalidación por revisión, lista no modificable y rechazo de respuesta obsoleta. Primera ejecución de los 13 casos iniciales aprobada; se añade prueba de revisión repetida tras adaptar Stream<int>.
+- Límite deliberado: componentes todavía aislados de ResultsPage; el lector real se inyectará mediante adaptador cuando esté disponible el repositorio compartido. No se introduce otra persistencia, ni se modifica OwnerAccommodationStore, MyAccommodationsPage o Agregar alojamiento. Dismissible, Deshacer y reinicio siguen pendientes.
+- No se publicaron comentarios ni solicitudes a compañeros; se entrega la confirmación propuesta en el chat para que el equipo la registre en #27.
+- Validación final: `flutter test --reporter expanded`, 35 pruebas aprobadas (21 existentes y 14 nuevas); formato de 45 archivos sin cambios; `flutter analyze` sin problemas; `flutter build web` completado; `git diff --check` sin errores. Se corrigió un aviso del analizador por corchetes angulares en un comentario, sin cambios de lógica posteriores a las pruebas.
+
+## 2026-11-04 - Integración de ResultsPage, Kenneth, issue #28
+
+- Solicitud: ejecutar la integración del catálogo del grupo #1, conservando el trabajo existente y evitando cambios en el almacenamiento del grupo #2.
+- Comprobación remota: no había PR o rama publicados del almacenamiento compartido ni del componente de Deshacer. No se inventaron sus clases ni se duplicó su implementación.
+- Implementado: ResultsPage consume CatalogFilterBar y CatalogResultsSection, conserva sus tarjetas y detalle, ofrece filtro de universidad y mantiene departamento/universidad coherentes. Buscar entrega su ubicación al Notifier. Los cambios del Notifier actualizan el formulario legado sin provocar consultas adicionales.
+- Adaptador provisional de lectura: CurrentCatalogReader consulta el mismo AccommodationRepository y OwnerAccommodationStore existentes; no almacena otra copia persistente ni incorpora shared_preferences. Las publicaciones notifican revisiones. CatalogScope conserva el lector entre rebuilds y centraliza su futuro reemplazo por la fuente compartida.
+- Pruebas de Víctor y MVP adaptadas a la consulta asíncrona real: cambiar filtro sí consulta, repetirlo o reconstruir la pantalla no. No se eliminaron sus escenarios para aprobar.
+- Se agregaron siete pruebas: estados y Reintentar en ResultsPage, coherencia de ubicación y limpiar, Buscar/pestañas sin recarga, composición real desde login, filtros del adaptador y notificación de publicaciones del propietario.
+- Corrección durante pruebas: la pantalla de login tiene dos textos INICIAR SESIÓN; se seleccionó explícitamente el ElevatedButton para probar la entrada real.
+- Validación: 42 pruebas aprobadas; flutter analyze sin problemas; formato de 50 archivos sin cambios; git diff --check sin errores; compilación web completada, con el aviso preexistente de fuente CupertinoIcons no incluida.
+- Pendiente: revisar la API y el PR reales del grupo #2 y conectar su adaptador definitivo; integrar el componente de Roberth y validar Deshacer/errores/persistencia con Víctor. No cerrar #28 ni hacer merge automático. No se modificaron MyAccommodationsPage, OwnerAccommodationStore ni dependencias.
+
+## 2026-11-04 - Revisión del PR #34 antes de integrar
+
+- Se revisó el commit cd44f59 de feat/29-almacenamiento en una worktree temporal, sin cambiar la implementación del grupo #2 ni mezclarla aún en feat/28-filtro.
+- Confirmaciones verificadas en #27: EmmanuelC-04 por grupo #2 y victordeleon172003 por grupo #1 aceptaron contrato y dependencia. CI remoto 41964533781 aprobado para cd44f59. El PR no tenía revisiones humanas registradas al consultar.
+- Suite publicada reproducida localmente: 32 pruebas aprobadas. La resolución de dependencias en la copia temporal adapta el lockfile al SDK local; esos cambios no se trasladan a ninguna rama.
+- Dos pruebas adicionales de revisión reproducen fallos de recuperación tras error inicial de lectura y de siembra. Ambas fallan: _ready se asigna una sola vez y conserva el Future fallido; query y escrituras vuelven a esperar el mismo error aunque el backend se recupere. Esto bloquea la recuperación mediante Reintentar si el fallo ocurre al inicializar.
+- Las pruebas de reproducción permanecen en la copia temporal, fuera del repositorio de trabajo. Se entrega la observación al usuario para coordinar la corrección con Javier; no se publicó comentario o revisión en nombre de otra persona ni se hizo merge.
+- Pendiente: corregir la inicialización recuperable en el PR #34 y ejecutar esas pruebas junto con las existentes antes de recomendar su integración; después conectar el adaptador definitivo y los componentes del PR #32 en #33.
+
+## 2026-11-04 — Preparación de borrado y Deshacer (Roberth, #28)
+
+- Herramienta: Codex; asistencia para inspección, diseño, implementación, pruebas y documentación. Las revisiones de IA no sustituyen la revisión humana del grupo #2.
+- Fuentes: código e historial del repositorio autorizado, issues #27/#28 y comentarios de aceptación, PR #30/#31 y sus revisiones, evidencia de Víctor y rama feat/28-filtro. El usuario confirmó que el PDF y la retroalimentación externa no están en esta PC nueva; no se inventó su contenido.
+- Cambios: controller genérico con callbacks del contrato acordado, wrapper Dismissible por ID, host de SnackBars, falso exclusivo de pruebas y evidencia. Sin editar ResultsPage, OwnerAccommodationStore ni persistencia; sin crear entidades definitivas de Javier. La integración requiere su API publicada y coordinación con Kenneth.
+- Decisiones: conservar el snapshot por identidad; encolar avisos por operación; bloquear doble borrado/restauración; informar fallos y reintentar restauración; dejar que la consulta tras changes confirmado retire la fila, sin eliminación optimista ni onDismissed con escritura.
+- Correcciones: la primera prueba detectó cierre incorrecto de SnackBars encolados al desmontar. Se sustituyó por un ScaffoldMessenger propio por pantalla. Se agregó expiración explícita del SnackBar con acción, se ajustó la espera de animación del gesto en la prueba y se excluyó el Dismissible interno del SnackBar del conteo de tarjetas. No se suprimieron excepciones de UI.
+- Propuestas descartadas: duplicar persistencia, fabricar snapshots desde la tarjeta o su índice filtrado, sustituir el SnackBar anterior y modificar la pantalla de Kenneth antes de coordinar. Se descartaron cambios automáticos del SDK en configuración/dependencias.
+- Coordinación: comentario publicado en #28 para Kenneth, Javier y Víctor; conector de escritura devolvió 403 y se usó GitHub CLI autenticado como roberdeleon.
+- Validación local: Flutter 3.47.7 / Dart 3.13.5; formato 41 archivos sin cambios, análisis sin problemas, suite completa con 33 pruebas aprobadas (12 nuevas). El CI existente verifica Flutter 3.44.8. Evidencia y pendientes en docs/evidencia_issue_28_borrado.md.
+- Pendiente de aceptación general: API real, integración de ResultsPage, sincronización con publicaciones de propietarios y verificación persistente tras cerrar/abrir. No se cierra #28 ni se hace merge automático.
+- Entrega: PR #32 en borrador desde feat/28-borrado-deshacer. Compilación web local correcta, con aviso de fuente CupertinoIcons ya existente; git diff --check sin errores. Los checks y la descripción del PR registran el resultado de CI y la coordinación final. También se usó GitHub CLI para crear el PR tras 403 del conector.
+
+## 2026-11-04 - Kenneth: conexión de componentes del PR #32 en ResultsPage
+
+- Se incorporó la rama feat/28-borrado-deshacer en feat/28-filtro para conservar los commits de Roberth. No se integró ningún PR en main. El único conflicto fue la bitácora; se conservaron ambas historias, incluidas las observaciones del PR #34.
+- ResultsPage envuelve las tarjetas con CatalogDismissible cuando recibe un CatalogDeletionController y mantiene CatalogUndoHost por encima de la consulta. La cola sobrevive a filtros, carga, errores y vacío. Las filas conservan keys por ID.
+- La capacidad de escritura se inyecta mediante catalogDeletionControllerProvider. Por defecto es null porque el lector actual del MVP no escribe; no se fabricó otra persistencia ni se añadió un falso a producción. La conexión real a deleteById/restore del PR #34 sigue pendiente de su corrección y revisión.
+- Se añadieron ocho pruebas de integración sobre ResultsPage, con fuente controlada exclusiva de test: identidad del snapshot/datos/orden, borrado fallido y repetición, restauración fallida con Reintentar, confirmación lenta y bloqueo de doble operación, filtro durante escritura, borrados consecutivos, host persistente ante error de consulta y fuente sin capacidad de escritura.
+- Validación: ocho casos nuevos aprobados; suite completa con 62 pruebas aprobadas (42 previas, 12 de Roberth y 8 nuevas); flutter analyze sin problemas; formato de 56 archivos sin cambios; flutter build web correcto, con aviso preexistente de fuente CupertinoIcons. Se corrigieron llaves de una condición de test señaladas por el analizador, sin cambiar su comportamiento.
+- Límite de aceptación: se verifica la integración de UI con callbacks y revisiones controladas, no borrado persistente real ni cierre/reapertura de la app. #28 permanece abierto; faltan el adaptador definitivo, validación de Víctor y revisión humana del grupo #2. No se publicaron mensajes a compañeros.
 
 ## 2026-11-04 - Issue #29: contrato de almacenamiento en worktree aislada
 
@@ -80,3 +145,42 @@
 - Corrección: la inicialización ahora empieza al primer uso, comparte un solo `Future` entre llamadas simultáneas y lo libera si falla. El siguiente uso reintenta en la misma instancia. El estado de la siembra se publica únicamente después de confirmar su escritura; los fallos no emiten revisiones.
 - Pruebas agregadas: recuperación tras lectura inicial fallida; recuperación tras escritura inicial fallida, comprobando que no queda dato guardado, que no hay revisiones y que una instancia nueva no duplica la siembra; consultas simultáneas comparten una sola inicialización.
 - Verificación tras la corrección: contrato aislado, 13 pruebas aprobadas; `dart format --output=none --set-exit-if-changed lib test`, 45 archivos y 0 cambios; `flutter analyze --no-pub`, sin problemas; `flutter test --no-pub --reporter expanded`, 35 pruebas aprobadas; `flutter build web --no-pub`, `Built build/web` con código 0. Pendiente el CI remoto del PR actualizado.
+
+## 2026-11-05 - Kenneth: integracion persistente y diagnostico web
+
+- Herramienta: Codex. Rama aislada codex/28-integracion-almacenamiento; main y feat/28-filtro no se modificaron. Se integro el contenido del PR #34 (09381fa) en esta rama de preparacion, sin hacer merge del PR en GitHub. El incremental de Roberth 9ae84a5 se incorporo una sola vez como fca1a38.
+- Composicion real: CatalogReader consulta el repositorio compartido; el controlador de borrado recibe deleteById y restore con el DeletedAccommodation original. Agregar y catalogo comparten instancia. Los providers declaran sus dependencias de scope para que las sustituciones de pruebas lleguen a los consumidores.
+- Cuatro pruebas nuevas usan la implementacion persistente real con backend de preferencias controlado: borrado/restauracion y fallo/reintento, fallo de escritura sin retirar datos, recreacion sin resembrar y alta compartida. Se corrigio el desmontaje del harness antes de cerrar el repositorio; no se eliminaron aserciones para ocultar fallos.
+- Verificacion: 83 pruebas aprobadas, flutter analyze sin problemas, compilacion web --no-pub --no-web-resources-cdn aprobada. Aviso de fuente Cupertino no bloqueante. Formato aplicado a los tres archivos senalados. No se afirma CI remoto de esta rama.
+- Prueba manual automatizada con Playwright en perfil propio persistente y origen fijo http://127.0.0.1:8093: publicacion desde formulario de Casa S15 Integracion, precio 1000; aparece en catalogo. Despues de recargar y de cerrar/reabrir completamente el navegador permanece el registro owner-1793884789486000, sequence 3, con los mismos datos. Consola: cero errores y advertencias. Se uso compilacion release con recursos locales; no se reprodujo ni se determino la causa de la pantalla blanca reportada bajo flutter run.
+- Pendientes: Mis alojamientos aun usa OwnerAccommodationStore; no se declara sincronizacion completa. La operacion para incorporar origin/feat/29-filtro fue rechazada en el control de permisos y no se ejecuto. No se recreo el trabajo de Emmanuel ni se sorteo ese rechazo. Las siete pruebas de Victor aun no estan incorporadas. PR #34 sigue abierto. No se cerraron issues ni se hizo merge a main.
+
+## 2026-11-05 - Kenneth: composicion separada para los dos listados
+
+- Herramienta: Codex. Se actualizo la inspeccion remota: PR #34 abierto, revision APPROVED de victordeleon172003; feat/29-filtro aun en cf12808. No se incorporo esa rama ni se modificaron los archivos asignados a Emmanuel o Roberth.
+- Se extrajo la fabrica de CatalogDeletionController a lib/app/accommodation_deletion_providers.dart. EasyHomeApp la invoca por separado para catalogDeletionControllerProvider y ownerAccommodationDeletionControllerProvider: dos controladores con tickets/eventos independientes, misma instancia de repositorio y restore del DeletedAccommodation original. El provider del propietario queda preparado; la pantalla aun debe consumirlo.
+- Dos pruebas nuevas montan EasyHomeApp y usan SharedPreferencesAccommodationRepository con preferencias controladas: borrados en ambos controladores, independencia de eventos/bloqueos, restauracion exacta y orden; fallo de borrado y restauracion con reintento, sin revisiones por escritura fallida ni duplicados por repetir Deshacer.
+- Correcciones del codigo generado de prueba: crear e inicializar el repositorio dentro del reloj de cada widget test, corregir la ejecucion de los bloques asincronos y asegurar limpieza de suscripciones. Se corrigio un error de sintaxis durante la simplificacion del harness; se volvieron a ejecutar todas las pruebas. No se publicaron los resultados intermedios como evidencia valida.
+- Verificacion final: 85 pruebas aprobadas; flutter analyze --no-pub sin problemas; formato de 68 archivos sin cambios; flutter build web --no-pub --no-web-resources-cdn aprobado. Persiste el aviso no bloqueante de fuente Cupertino. No se repitio la prueba manual de navegador para este cambio de composicion.
+- Pendiente: integracion de la pantalla real de Emmanuel, aceptacion de Roberth y sincronizacion visual conjunta. La prueba de composicion no equivale a tener ambos listados ya conectados. Sin cambios a main, merge automatico ni cierre de issues. No se crearon archivos de prompts o coordinacion.
+
+## 2026-11-04 - QA de aceptacion issue #28 - Victor
+
+- Herramienta utilizada: ChatGPT.
+- Se revisaron los componentes del PR #32 y el contrato del PR #34.
+- Se prepararon 7 pruebas de aceptacion con fuente controlada.
+- Resultado individual: 7 pruebas aprobadas.
+- Suite completa: 49 pruebas aprobadas.
+- flutter analyze: sin problemas.
+- flutter build web: compilacion exitosa.
+- git diff --check: sin errores.
+- No se modificaron ResultsPage ni el almacenamiento.
+- Pendiente: validar integracion y persistencia real.
+- Las pruebas no certifican aun el issue #28 completo.
+
+## 2026-11-05 - Kenneth: preparacion final del catalogo para PR #33
+
+- Se preparo un worktree desde 8c88063 y se integro el historial d82a432 de aceptacion de Roberth mediante merge, sin incorporar la rama del propietario. Conflicto unico de bitacora resuelto conservando ambas entradas. Las siete pruebas de Victor permanecen en un solo archivo.
+- Validacion propia de esta entrega: 100 pruebas aprobadas, formato de 70 archivos sin cambios, flutter analyze --no-pub sin problemas y flutter build web --no-pub --no-web-resources-cdn aprobado; aviso Cupertino preexistente. No se publica el ajuste automatico de pubspec.lock producido por el SDK local.
+- Se actualiza la rama remota feat/28-filtro solo mediante avance normal, manteniendo el PR #33 y su base main. El historial del almacenamiento #34 es ancestro; sigue requiriendo su revision e integracion humana. No se hace merge a main ni se cierran issues.
+- La descripcion final del PR incluye la pregunta de key y separa resultados locales de CI/revision y cierre/reapertura. El proceso final requiere otro PR del propietario sobre esta base; no se sustituyen dos entregas de parejas por una sola.

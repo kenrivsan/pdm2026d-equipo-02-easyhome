@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import '../../support/catalog_test_scope.dart';
 
 import 'package:easyhome/features/accommodations/data/datasources/accommodation_data_source.dart';
 import 'package:easyhome/features/accommodations/data/datasources/location_data_source.dart';
@@ -34,10 +35,14 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider<AccommodationSearchController>.value(
         value: controller,
-        child: const MaterialApp(home: ResultsPage()),
+        child: CatalogTestScope(
+          controller: controller,
+          child: const MaterialApp(home: ResultsPage()),
+        ),
       ),
     );
 
+    await tester.pumpAndSettle();
     expect(
       find.text(
         'No se encontraron alojamientos disponibles para esta búsqueda.',
@@ -66,12 +71,17 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider<AccommodationSearchController>.value(
         value: controller,
-        child: const MaterialApp(home: ResultsPage()),
+        child: CatalogTestScope(
+          controller: controller,
+          child: const MaterialApp(home: ResultsPage()),
+        ),
       ),
     );
 
+    await tester.pumpAndSettle();
     expect(find.text('Apartamento para estudiantes'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Apartamento para estudiantes'));
     await tester.tap(find.text('Apartamento para estudiantes'));
 
     await tester.pumpAndSettle();

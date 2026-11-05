@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../app/navigation/app_navigation.dart';
 import '../controllers/accommodation_search_controller.dart';
+import '../controllers/catalog_providers.dart';
 
 class SearchPage extends ConsumerWidget {
   const SearchPage({super.key});
@@ -30,6 +31,9 @@ class SearchPage extends ConsumerWidget {
         child: Column(
           children: [
             DropdownButtonFormField<String>(
+              key: ValueKey(
+                'search-department-${controller.selectedDepartmentId}',
+              ),
               decoration: const InputDecoration(
                 labelText: 'Departamento',
                 border: OutlineInputBorder(),
@@ -46,6 +50,9 @@ class SearchPage extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
+              key: ValueKey(
+                'search-university-${controller.selectedUniversityId}',
+              ),
               decoration: const InputDecoration(
                 labelText: 'Universidad',
                 border: OutlineInputBorder(),
@@ -69,6 +76,12 @@ class SearchPage extends ConsumerWidget {
                   controller.selectedDepartmentId != null &&
                           controller.selectedUniversityId != null
                       ? () {
+                        ref
+                            .read(catalogFilterProvider.notifier)
+                            .selectLocation(
+                              departmentId: controller.selectedDepartmentId,
+                              universityId: controller.selectedUniversityId,
+                            );
                         ref
                             .read(appNavigationProvider.notifier)
                             .select(AppTab.accommodations);

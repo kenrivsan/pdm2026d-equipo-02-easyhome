@@ -1,20 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../app/theme/app_theme.dart';
 import '../../domain/entities/accommodation.dart';
 import '../controllers/accommodation_search_controller.dart';
+import '../controllers/catalog_providers.dart';
+import '../controllers/catalog_deletion_provider.dart';
+import '../widgets/catalog_dismissible.dart';
+import '../widgets/catalog_undo_host.dart';
+import '../widgets/catalog_filter_bar.dart';
+import '../widgets/catalog_results_section.dart';
 import 'accommodation_detail_page.dart';
 
-class ResultsPage extends StatelessWidget {
+class ResultsPage extends ConsumerWidget {
   const ResultsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final controller = context.watch<AccommodationSearchController>();
-    final accommodations = controller.filteredAccommodations;
+    final filter = ref.watch(catalogFilterProvider);
+    // Compatibilidad con el formulario Buscar del MVP. La fuente del listado
+    // sigue siendo exclusivamente el filtro inmutable de Riverpod.
+    ref.listen(catalogFilterProvider, (_, next) {
+      controller.selectDepartment(next.departmentId);
+      controller.selectUniversity(next.universityId);
+      controller.selectType(next.type);
+    });
+    final results = ref.watch(catalogResultsProvider);
+    final accommodations = results.asData?.value;
+    final deletionController = ref.watch(catalogDeletionControllerProvider);
 
-    return Scaffold(
+    final page = Scaffold(
       appBar: AppBar(title: const Text('Resultados de búsqueda')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -55,7 +72,9 @@ class ResultsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        accommodations.length == 1
+                        accommodations == null
+                            ? 'Consulta alojamientos según tus filtros.'
+                            : accommodations.length == 1
                             ? 'Encontramos 1 opción para ti.'
                             : 'Encontramos ${accommodations.length} opciones para ti.',
                         style: const TextStyle(
@@ -104,37 +123,19 @@ class ResultsPage extends StatelessWidget {
 
                       const SizedBox(height: 18),
 
-                      DropdownButtonFormField<AccommodationType?>(
-                        decoration: const InputDecoration(
-                          labelText: 'Tipo de alojamiento',
-                          prefixIcon: Icon(Icons.home_work_outlined),
-                        ),
-                        initialValue: controller.selectedType,
-                        items: const [
-                          DropdownMenuItem<AccommodationType?>(
-                            value: null,
-                            child: Text('Todos'),
-                          ),
-                          DropdownMenuItem<AccommodationType?>(
-                            value: AccommodationType.apartment,
-                            child: Text('Apartamento'),
-                          ),
-                          DropdownMenuItem<AccommodationType?>(
-                            value: AccommodationType.boardingHouse,
-                            child: Text('Pensionado'),
-                          ),
-                        ],
-                        onChanged: controller.selectType,
-                      ),
+                      const CatalogFilterBar(),
 
                       const SizedBox(height: 16),
 
                       DropdownButtonFormField<String?>(
+                        key: ValueKey(
+                          'catalog-department-${filter.departmentId}',
+                        ),
                         decoration: const InputDecoration(
                           labelText: 'Departamento',
                           prefixIcon: Icon(Icons.location_on_outlined),
                         ),
-                        initialValue: controller.selectedDepartmentId,
+                        initialValue: filter.departmentId,
                         items: [
                           const DropdownMenuItem<String?>(
                             value: null,
@@ -147,7 +148,63 @@ class ResultsPage extends StatelessWidget {
                             ),
                           ),
                         ],
-                        onChanged: controller.selectDepartment,
+                        onChanged: (value) {
+                          ref
+                              .read(catalogFilterProvider.notifier)
+                              .selectLocation(
+                                departmentId: value,
+                                universityId:
+                                    value == filter.departmentId
+                                        ? filter.universityId
+                                        : null,
+                              );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String?>(
+                        key: ValueKey(
+                          'catalog-university-${filter.departmentId}-${filter.universityId}',
+                        ),
+                        initialValue: filter.universityId,
+                        decoration: const InputDecoration(
+                          labelText: 'Universidad',
+                          prefixIcon: Icon(Icons.school_outlined),
+                        ),
+                        items: [
+                          const DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text('Todas'),
+                          ),
+                          ...controller.universities
+                              .where(
+                                (university) =>
+                                    filter.departmentId == null ||
+                                    university.departmentId ==
+                                        filter.departmentId,
+                              )
+                              .map(
+                                (university) => DropdownMenuItem<String?>(
+                                  value: university.id,
+                                  child: Text(university.name),
+                                ),
+                              ),
+                        ],
+                        onChanged: (value) {
+                          final departmentId =
+                              value == null
+                                  ? filter.departmentId
+                                  : controller.universities
+                                      .firstWhere(
+                                        (university) => university.id == value,
+                                      )
+                                      .departmentId;
+                          ref
+                              .read(catalogFilterProvider.notifier)
+                              .selectLocation(
+                                departmentId: departmentId,
+                                universityId: value,
+                              );
+                        },
                       ),
                     ],
                   ),
@@ -166,53 +223,42 @@ class ResultsPage extends StatelessWidget {
 
                 const SizedBox(height: 14),
 
-                // SIN RESULTADOS
-                if (accommodations.isEmpty)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: const Column(
-                      children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          color: AppTheme.textSecondary,
-                          size: 48,
-                        ),
-                        SizedBox(height: 14),
-                        Text(
-                          'No se encontraron alojamientos disponibles para esta búsqueda.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                // RESULTADOS
-                else
-                  ...accommodations.map(
-                    (accommodation) => Padding(
+                CatalogResultsSection(
+                  itemBuilder: (context, accommodation) {
+                    final card = _AccommodationCard(
+                      key: ValueKey(accommodation.id),
+                      accommodation: accommodation,
+                    );
+                    return Padding(
+                      key: ValueKey(accommodation.id),
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: _AccommodationCard(accommodation: accommodation),
-                    ),
-                  ),
+                      child:
+                          deletionController == null
+                              ? card
+                              : CatalogDismissible<Object>(
+                                alojamiento: accommodation,
+                                controller: deletionController,
+                                child: card,
+                              ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+    // El host vive fuera de la consulta y no se desmonta al filtrar, cargar,
+    // mostrar errores o quedarse sin filas mientras existe una operación.
+    return deletionController == null
+        ? page
+        : CatalogUndoHost<Object>(controller: deletionController, child: page);
   }
 }
 
 class _AccommodationCard extends StatelessWidget {
-  const _AccommodationCard({required this.accommodation});
+  const _AccommodationCard({required this.accommodation, super.key});
 
   final Accommodation accommodation;
 
