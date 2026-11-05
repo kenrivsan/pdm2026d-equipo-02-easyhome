@@ -159,3 +159,9 @@ Verificacion conjunta real: 116 pruebas aprobadas; formato de 77 archivos sin ca
 La pantalla blanca del entorno original de Victor sigue sin causa confirmada. Su reporte solo aporta comandos flutter run -d chrome --web-port 7357 y flutter run -d web-server --web-port 7357, URL http://localhost:7357, Chrome/Brave sin versiones/perfil confirmados ni primer error. Las reproducciones satisfactorias previas no prueban cual fue la causa original.
 
 Regresion adicional del reporte de Roberth: cambiar la instancia del repositorio sin desmontar Mis alojamientos conserva su State, sustituye el controller y aplica baja/Deshacer solo al repositorio nuevo. Prueba real de composicion con preferencias controladas, incluida en la ejecucion de 116. GitHub reconoce #35/#36 como integrados en la preparacion; main continua pendiente.
+
+## 2026-11-05 - Entrega final de catalogo, PR #33
+
+Base de preparacion: 8c88063 mas historial de Roberth d82a432, sin rama #35 ni pantalla de propietario. Esta entrega por separado pasa 100 pruebas, formato de 70 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. No confundir con las 116 pruebas de la preparacion conjunta.
+
+El almacenamiento #34 debe integrarse primero a main. Luego este PR del grupo #1 requiere CI y revision humana del grupo #2. La entrega del propietario tendra un PR final separado. La validacion manual de borrado/restauracion tras cerrar el navegador se documentara sobre la preparacion conjunta y no se sustituye por REAL08.
