@@ -58,7 +58,6 @@ void main() {
     seedLoads = 0;
   });
 
-
   Future<void> mount(
     WidgetTester tester,
     SharedPreferencesAccommodationRepository repository,
@@ -71,16 +70,28 @@ void main() {
         child: const EasyHomeApp(),
       ),
     );
-    await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 5));
+    await tester.pumpAndSettle(
+      const Duration(milliseconds: 100),
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 5),
+    );
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'demo@ingenium.com');
     await tester.enterText(fields.at(1), 'EasyHome123');
     final login = find.widgetWithText(ElevatedButton, 'INICIAR SESIÓN');
     await tester.ensureVisible(login);
     await tester.tap(login);
-    await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 5));
+    await tester.pumpAndSettle(
+      const Duration(milliseconds: 100),
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 5),
+    );
     await tester.tap(find.text('Alojamientos'));
-    await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 5));
+    await tester.pumpAndSettle(
+      const Duration(milliseconds: 100),
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 5),
+    );
   }
 
   Future<void> swipe(WidgetTester tester, String id) async {
@@ -89,7 +100,11 @@ void main() {
     );
     await tester.ensureVisible(row);
     await tester.drag(row, const Offset(-700, 0));
-    await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 5));
+    await tester.pumpAndSettle(
+      const Duration(milliseconds: 100),
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 5),
+    );
   }
 
   void appTest(String name, Future<void> Function(WidgetTester) body) {
@@ -128,8 +143,14 @@ void main() {
       final subscription = deletionController.events.listen(events.add);
       addTearDown(subscription.cancel);
       await swipe(tester, original.id);
-      expect(events.where((event) => event.kind == CatalogDeletionKind.deleted), hasLength(1));
-      final ticket = events.firstWhere((event) => event.kind == CatalogDeletionKind.deleted).ticket!;
+      expect(
+        events.where((event) => event.kind == CatalogDeletionKind.deleted),
+        hasLength(1),
+      );
+      final ticket =
+          events
+              .firstWhere((event) => event.kind == CatalogDeletionKind.deleted)
+              .ticket!;
       expect(find.text(original.title), findsNothing);
       expect(
         (await repository.query(
@@ -139,11 +160,19 @@ void main() {
       );
       preferences.failWrite = true;
       await tester.tap(find.text('Deshacer'));
-      await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 5));
+      await tester.pumpAndSettle(
+        const Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        const Duration(seconds: 5),
+      );
       expect(find.text('No se pudo restaurar el alojamiento.'), findsOneWidget);
       expect(find.text(original.title), findsNothing);
       await tester.tap(find.text('Reintentar'));
-      await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 5));
+      await tester.pumpAndSettle(
+        const Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        const Duration(seconds: 5),
+      );
       final restored = await repository.query(const AccommodationQuery());
       expect(
         restored,
@@ -155,19 +184,18 @@ void main() {
     },
   );
 
-  appTest(
-    'escritura fallida desde el gesto no elimina la fila ni los datos',
-    (tester) async {
-      final repository = create();
-      await mount(tester, repository);
-      final before = await repository.query(const AccommodationQuery());
-      preferences.failWrite = true;
-      await swipe(tester, 'apartment-quetzaltenango-1');
-      expect(find.text('No se pudo borrar el alojamiento.'), findsOneWidget);
-      expect(find.text('Apartamento para estudiantes'), findsOneWidget);
-      expect(await repository.query(const AccommodationQuery()), before);
-    },
-  );
+  appTest('escritura fallida desde el gesto no elimina la fila ni los datos', (
+    tester,
+  ) async {
+    final repository = create();
+    await mount(tester, repository);
+    final before = await repository.query(const AccommodationQuery());
+    preferences.failWrite = true;
+    await swipe(tester, 'apartment-quetzaltenango-1');
+    expect(find.text('No se pudo borrar el alojamiento.'), findsOneWidget);
+    expect(find.text('Apartamento para estudiantes'), findsOneWidget);
+    expect(await repository.query(const AccommodationQuery()), before);
+  });
 
   appTest('app recreada conserva el borrado y no vuelve a sembrar', (
     tester,
@@ -176,7 +204,11 @@ void main() {
     await mount(tester, first);
     await swipe(tester, 'apartment-quetzaltenango-1');
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 5));
+    await tester.pumpAndSettle(
+      const Duration(milliseconds: 100),
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 5),
+    );
     await first.dispose();
     final second = create();
     await mount(tester, second);
@@ -217,7 +249,11 @@ void main() {
         isOwned: true,
       );
       await repository.add(publication);
-      await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 5));
+      await tester.pumpAndSettle(
+        const Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        const Duration(seconds: 5),
+      );
       expect(find.text(publication.title), findsOneWidget);
       expect(
         await repository.query(const AccommodationQuery(onlyOwned: true)),

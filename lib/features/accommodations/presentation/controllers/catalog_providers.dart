@@ -63,10 +63,18 @@ class _CatalogRevision extends Notifier<int> {
   }
 }
 
-final catalogResultsProvider = FutureProvider<List<Accommodation>>((ref) async {
-  final filter = ref.watch(catalogFilterProvider);
-  final reader = ref.watch(catalogReaderProvider);
-  ref.watch(_catalogRevisionProvider);
-  return List.unmodifiable(await reader.query(filter));
-  // Reintentar es explícito: un error no provoca consultas ocultas con backoff.
-}, retry: (_, _) => null, dependencies: [catalogReaderProvider, catalogFilterProvider, _catalogRevisionProvider]);
+final catalogResultsProvider = FutureProvider<List<Accommodation>>(
+  (ref) async {
+    final filter = ref.watch(catalogFilterProvider);
+    final reader = ref.watch(catalogReaderProvider);
+    ref.watch(_catalogRevisionProvider);
+    return List.unmodifiable(await reader.query(filter));
+    // Reintentar es explícito: un error no provoca consultas ocultas con backoff.
+  },
+  retry: (_, _) => null,
+  dependencies: [
+    catalogReaderProvider,
+    catalogFilterProvider,
+    _catalogRevisionProvider,
+  ],
+);

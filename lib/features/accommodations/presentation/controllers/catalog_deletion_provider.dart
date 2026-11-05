@@ -6,4 +6,7 @@ import 'catalog_deletion_controller.dart';
 /// null mantiene el catálogo en modo lectura mientras se integra el repositorio
 /// compartido. No se fabrica un borrado local para sustituir la persistencia.
 final catalogDeletionControllerProvider =
-    Provider<CatalogDeletionController<Object>?>((ref) => null, dependencies: const []);
+    Provider<CatalogDeletionController<Object>?>(
+      (ref) => null,
+      dependencies: const [],
+    );
