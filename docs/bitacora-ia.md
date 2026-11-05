@@ -29,3 +29,12 @@
 
 - A petición del usuario se retiraron los dos archivos de prompts y el documento de coordinación generados localmente. Las instrucciones se entregan en el chat; la coordinación se centraliza en los issues de GitHub.
 - Se conserva esta bitácora exigida por el laboratorio, sin copiar los prompts completos al repositorio.
+## 2026-11-04 - Preparación de pruebas issue #28 (Víctor)
+
+- **Herramienta:** ChatGPT (GPT-6), como apoyo en preparación de pruebas de Flutter.
+- **Solicitud:** revisar issue #28 y preparar casos del filtro, estados vacío/error, borrado, Deshacer, fallos, consultas y persistencia.
+- **Fuentes revisadas:** issue #28, estado de PR #30, `results_page.dart`, controlador, repositorio, datasource, pruebas existentes y bitácora.
+- **Resultado:** se preparó el archivo de pruebas `issue_28_preparacion_test.dart` sin modificar navegación ni almacenamiento. Se identificaron funciones aún pendientes de implementación para no reportar falsos positivos.
+- **Criterio humano:** mantener pruebas separadas del código productivo del equipo y no considerar aprobados los criterios de borrado, Deshacer o persistencia hasta ejecutarlos.
+- **Resultados observados en PowerShell antes de incorporar las pruebas nuevas:** `flutter pub get` correcto; `flutter test` con 17 pruebas aprobadas; `flutter build web` correcto con avisos no bloqueantes.
+- **Pendiente:** ejecutar formato, `flutter analyze`, nuevas pruebas y validar requisitos finales sobre `feat/28-filtro`, incluyendo CI y capturas.
