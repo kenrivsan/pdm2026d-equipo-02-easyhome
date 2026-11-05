@@ -133,3 +133,26 @@ Pendiente:
 - Verificar sincronizacion y persistencia real.
 - Comprobar funcionamiento al reiniciar la aplicacion.
 
+
+## 2026-11-05 - Consolidacion de Kenneth: ambos listados integrados
+
+La rama codex/28-integracion-almacenamiento incluye los historiales de los PR #35 y #36, el ultimo ajuste 3c9a93a y una sola copia de las siete pruebas de Victor. El propietario usa ownerAccommodationDeletionControllerProvider; no conserva un controller local paralelo. Ambos controladores escriben sobre la misma instancia del repositorio.
+
+Verificacion conjunta real: 115 pruebas aprobadas; formato de 77 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. El test adicional en catalog_shared_storage_integration_test.dart recorre las dos pantallas reales: alta, borrado/Deshacer en ambos sentidos, datos/orden y controller correcto. El backend de preferencias de ese test es memoria controlada; REAL08 sigue siendo archivo y ninguna de esas pruebas equivale a reiniciar un navegador real.
+
+| Criterio PDF | Implementado y verificado localmente | Pendiente de entrega |
+|---|---|---|
+| Navegacion, 1 | Notifier e IndexedStack; test/app/navigation_test.dart verifica destinos, Ver todos y scroll. Base de navegacion ya en main. | Comprobar regresiones al integrar toda la entrega a main. |
+| Filtro dependiente, 1.5 | catalog_providers.dart y my_accommodations_providers.dart observan filtros inmutables; catalogo conserva tipo/departamento/universidad; propietario consulta onlyOwned. Pruebas de filtro, vacio, error, consultas y respuestas tardias. | Aceptacion humana de ambos listados sobre el commit conjunto. |
+| Borrar y Deshacer, 1 | CatalogDismissible usa ValueKey(id), consulta confirma escritura; repositorio devuelve DeletedAccommodation original; errores y orden cubiertos en suites de ambos listados y prueba conjunta. | Navegador: cerrar/abrir con registro borrado y registro restaurado, ambos listados, mismo perfil y origen. |
+| Pruebas, 1 | Suite integrada: 115 aprobadas. Se preservan pruebas originales y se distinguen falsos, preferencias en memoria y archivo. | CI remoto del SHA conjunto y del resultado final en main. |
+| Proceso Git, 0.5 | Historiales conservados, bitacora consolidada, PR #35 para propietario y #36 para aceptacion de catalogo, descripciones con pregunta de key. | Revision humana de otra pareja y entrega final mediante PR a main; no se afirma 5/5. |
+
+### Orden propuesto de integracion, sujeto a revision humana
+
+1. Revisar y aprobar el almacenamiento #34 y llevarlo a main conservando su historial. La aprobacion de Victor sobre 09381fa ya fue observada; no se suplanta otra revision.
+2. Revisar los cambios del catalogo #33 y los del propietario #35/#36 sobre la preparacion conjunta. #35 y #36 apuntan a la preparacion, no entregan por si solos a main. No cambiar su base ni duplicar diffs sin revisar primero las relaciones de ancestros.
+3. Abrir un PR de preparacion hacia main que documente ambos grupos y enlace #28/#29 y las revisiones por listado, o acordar con el docente si exige dos PR finales separados hacia main. El PDF exige PR por pareja integrado en main: no afirmar cumplimiento solo por unir ramas de preparacion. No cerrar #28/#29 hasta acreditar ese proceso, CI y aceptacion.
+4. Tras la integracion humana, repetir CI sobre main y entregar en Moodle el enlace al repositorio. La retroalimentacion establece entrega tardia con penalizacion; no se modifican fechas.
+
+La pantalla blanca del entorno original de Victor sigue sin causa confirmada. Su reporte solo aporta comandos flutter run -d chrome --web-port 7357 y flutter run -d web-server --web-port 7357, URL http://localhost:7357, Chrome/Brave sin versiones/perfil confirmados ni primer error. Las reproducciones satisfactorias previas no prueban cual fue la causa original.
