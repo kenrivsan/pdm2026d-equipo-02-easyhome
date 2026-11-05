@@ -38,3 +38,15 @@
 - **Criterio humano:** mantener pruebas separadas del código productivo del equipo y no considerar aprobados los criterios de borrado, Deshacer o persistencia hasta ejecutarlos.
 - **Resultados observados en PowerShell antes de incorporar las pruebas nuevas:** `flutter pub get` correcto; `flutter test` con 17 pruebas aprobadas; `flutter build web` correcto con avisos no bloqueantes.
 - **Pendiente:** ejecutar formato, `flutter analyze`, nuevas pruebas y validar requisitos finales sobre `feat/28-filtro`, incluyendo CI y capturas.
+
+## 2026-11-04 - Componentes aislados del catálogo, issue #28
+
+- Herramienta: Codex. Solicitud: continuar el prompt del grupo #1 mientras se acuerda la fuente compartida con el grupo #2.
+- Base: rama feat/28-filtro desde main con PR #31 integrado; se conservan las pruebas preliminares de Víctor.
+- Implementado: CatalogFilter inmutable con igualdad por valor; Notifier; puerto de lectura CatalogReader; FutureProvider con ref.watch del filtro y revisión; componentes de filtro y estados con Reintentar y limpiar filtros.
+- Corrección: los reintentos automáticos de Riverpod se deshabilitan solo para esta consulta, para que un error no genere consultas ocultas y la recuperación sea explícita con Reintentar.
+- Coordinación recibida del grupo #2: implementarán entidades, repositorio, persistencia y Agregar alojamiento, proponiendo SharedPreferencesAsync con JSON versionado y operación add. Se adapta el puerto de lectura del catálogo a Stream<int> de revisiones, sin añadir ni modificar sus dependencias.
+- Pruebas: filtro Todos/Apartamento/Pensionado, igualdad, conservación de ubicación, vacío y limpiar, carga, error/Reintentar, consultas repetidas, invalidación por revisión, lista no modificable y rechazo de respuesta obsoleta. Primera ejecución de los 13 casos iniciales aprobada; se añade prueba de revisión repetida tras adaptar Stream<int>.
+- Límite deliberado: componentes todavía aislados de ResultsPage; el lector real se inyectará mediante adaptador cuando esté disponible el repositorio compartido. No se introduce otra persistencia, ni se modifica OwnerAccommodationStore, MyAccommodationsPage o Agregar alojamiento. Dismissible, Deshacer y reinicio siguen pendientes.
+- No se publicaron comentarios ni solicitudes a compañeros; se entrega la confirmación propuesta en el chat para que el equipo la registre en #27.
+- Validación final: `flutter test --reporter expanded`, 35 pruebas aprobadas (21 existentes y 14 nuevas); formato de 45 archivos sin cambios; `flutter analyze` sin problemas; `flutter build web` completado; `git diff --check` sin errores. Se corrigió un aviso del analizador por corchetes angulares en un comentario, sin cambios de lógica posteriores a las pruebas.
