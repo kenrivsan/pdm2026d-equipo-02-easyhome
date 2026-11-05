@@ -154,3 +154,17 @@
 - Verificacion: 83 pruebas aprobadas, flutter analyze sin problemas, compilacion web --no-pub --no-web-resources-cdn aprobada. Aviso de fuente Cupertino no bloqueante. Formato aplicado a los tres archivos senalados. No se afirma CI remoto de esta rama.
 - Prueba manual automatizada con Playwright en perfil propio persistente y origen fijo http://127.0.0.1:8093: publicacion desde formulario de Casa S15 Integracion, precio 1000; aparece en catalogo. Despues de recargar y de cerrar/reabrir completamente el navegador permanece el registro owner-1793884789486000, sequence 3, con los mismos datos. Consola: cero errores y advertencias. Se uso compilacion release con recursos locales; no se reprodujo ni se determino la causa de la pantalla blanca reportada bajo flutter run.
 - Pendientes: Mis alojamientos aun usa OwnerAccommodationStore; no se declara sincronizacion completa. La operacion para incorporar origin/feat/29-filtro fue rechazada en el control de permisos y no se ejecuto. No se recreo el trabajo de Emmanuel ni se sorteo ese rechazo. Las siete pruebas de Victor aun no estan incorporadas. PR #34 sigue abierto. No se cerraron issues ni se hizo merge a main.
+
+## 2026-11-04 - QA de aceptacion issue #28 - Victor
+
+- Herramienta utilizada: ChatGPT.
+- Se revisaron los componentes del PR #32 y el contrato del PR #34.
+- Se prepararon 7 pruebas de aceptacion con fuente controlada.
+- Resultado individual: 7 pruebas aprobadas.
+- Suite completa: 49 pruebas aprobadas.
+- flutter analyze: sin problemas.
+- flutter build web: compilacion exitosa.
+- git diff --check: sin errores.
+- No se modificaron ResultsPage ni el almacenamiento.
+- Pendiente: validar integracion y persistencia real.
+- Las pruebas no certifican aun el issue #28 completo.

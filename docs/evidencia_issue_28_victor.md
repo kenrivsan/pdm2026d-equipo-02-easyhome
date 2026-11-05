@@ -64,3 +64,26 @@ La key de `Dismissible` debe usar el **ID estable** del alojamiento, no su índi
 - git diff --check: sin errores.
 - Pendiente: validar borrado, Deshacer, errores y persistencia sobre la implementacion definitiva del issue #28.
 
+
+## QA de aceptacion - Victor - 04/11/2026
+
+Rama: test/28-aceptacion-victor
+Issue: #28
+
+Resultados:
+- 7 pruebas nuevas de aceptacion aprobadas.
+- flutter test: 49 pruebas aprobadas.
+- flutter analyze: sin problemas.
+- flutter build web: compilacion exitosa.
+- git diff --check: sin errores.
+
+Alcance:
+- Pruebas con fuente controlada.
+- Componentes temporales del PR #32.
+- Sin modificar ResultsPage ni almacenamiento.
+
+Pendiente:
+- Validar la integracion definitiva.
+- Verificar sincronizacion y persistencia real.
+- Comprobar funcionamiento al reiniciar la aplicacion.
+
