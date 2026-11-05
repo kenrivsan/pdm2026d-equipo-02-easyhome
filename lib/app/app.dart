@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:provider/provider.dart';
 
 import '../features/accommodations/data/datasources/accommodation_data_source.dart';
@@ -11,39 +10,44 @@ import '../features/accommodations/domain/repositories/location_repository.dart'
 import '../features/accommodations/presentation/controllers/accommodation_search_controller.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import 'theme/app_theme.dart';
+import 'catalog_scope.dart';
 
 class EasyHomeApp extends StatelessWidget {
   const EasyHomeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: MultiProvider(
-        providers: [
-          Provider<AccommodationRepository>(
-            create:
-                (_) => AccommodationRepositoryImpl(
-                  InMemoryAccommodationDataSource(),
-                ),
-          ),
-          Provider<LocationRepository>(
-            create: (_) => LocationRepositoryImpl(InMemoryLocationDataSource()),
-          ),
-          ChangeNotifierProvider(
-            create:
-                (context) => AccommodationSearchController(
-                  accommodationRepository:
-                      context.read<AccommodationRepository>(),
-                  locationRepository: context.read<LocationRepository>(),
-                )..loadData(),
-          ),
-        ],
-        child: MaterialApp(
-          title: 'Easy Home',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          home: const LoginPage(),
+    return MultiProvider(
+      providers: [
+        Provider<AccommodationRepository>(
+          create:
+              (_) => AccommodationRepositoryImpl(
+                InMemoryAccommodationDataSource(),
+              ),
         ),
+        Provider<LocationRepository>(
+          create: (_) => LocationRepositoryImpl(InMemoryLocationDataSource()),
+        ),
+        ChangeNotifierProvider(
+          create:
+              (context) => AccommodationSearchController(
+                accommodationRepository:
+                    context.read<AccommodationRepository>(),
+                locationRepository: context.read<LocationRepository>(),
+              )..loadData(),
+        ),
+      ],
+      child: Builder(
+        builder:
+            (context) => CatalogScope(
+              repository: context.read<AccommodationRepository>(),
+              child: MaterialApp(
+                title: 'Easy Home',
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.light,
+                home: const LoginPage(),
+              ),
+            ),
       ),
     );
   }

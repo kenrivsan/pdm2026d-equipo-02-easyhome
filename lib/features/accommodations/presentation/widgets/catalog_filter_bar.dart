@@ -14,7 +14,10 @@ class CatalogFilterBar extends ConsumerWidget {
     return DropdownButtonFormField<AccommodationType?>(
       key: ValueKey(filter.type),
       initialValue: filter.type,
-      decoration: const InputDecoration(labelText: 'Tipo de alojamiento'),
+      decoration: const InputDecoration(
+        labelText: 'Tipo de alojamiento',
+        prefixIcon: Icon(Icons.home_work_outlined),
+      ),
       items: const [
         DropdownMenuItem(value: null, child: Text('Todos')),
         DropdownMenuItem(

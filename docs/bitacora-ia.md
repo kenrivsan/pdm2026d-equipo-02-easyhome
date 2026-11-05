@@ -50,3 +50,15 @@
 - Límite deliberado: componentes todavía aislados de ResultsPage; el lector real se inyectará mediante adaptador cuando esté disponible el repositorio compartido. No se introduce otra persistencia, ni se modifica OwnerAccommodationStore, MyAccommodationsPage o Agregar alojamiento. Dismissible, Deshacer y reinicio siguen pendientes.
 - No se publicaron comentarios ni solicitudes a compañeros; se entrega la confirmación propuesta en el chat para que el equipo la registre en #27.
 - Validación final: `flutter test --reporter expanded`, 35 pruebas aprobadas (21 existentes y 14 nuevas); formato de 45 archivos sin cambios; `flutter analyze` sin problemas; `flutter build web` completado; `git diff --check` sin errores. Se corrigió un aviso del analizador por corchetes angulares en un comentario, sin cambios de lógica posteriores a las pruebas.
+
+## 2026-11-04 - Integración de ResultsPage, Kenneth, issue #28
+
+- Solicitud: ejecutar la integración del catálogo del grupo #1, conservando el trabajo existente y evitando cambios en el almacenamiento del grupo #2.
+- Comprobación remota: no había PR o rama publicados del almacenamiento compartido ni del componente de Deshacer. No se inventaron sus clases ni se duplicó su implementación.
+- Implementado: ResultsPage consume CatalogFilterBar y CatalogResultsSection, conserva sus tarjetas y detalle, ofrece filtro de universidad y mantiene departamento/universidad coherentes. Buscar entrega su ubicación al Notifier. Los cambios del Notifier actualizan el formulario legado sin provocar consultas adicionales.
+- Adaptador provisional de lectura: CurrentCatalogReader consulta el mismo AccommodationRepository y OwnerAccommodationStore existentes; no almacena otra copia persistente ni incorpora shared_preferences. Las publicaciones notifican revisiones. CatalogScope conserva el lector entre rebuilds y centraliza su futuro reemplazo por la fuente compartida.
+- Pruebas de Víctor y MVP adaptadas a la consulta asíncrona real: cambiar filtro sí consulta, repetirlo o reconstruir la pantalla no. No se eliminaron sus escenarios para aprobar.
+- Se agregaron siete pruebas: estados y Reintentar en ResultsPage, coherencia de ubicación y limpiar, Buscar/pestañas sin recarga, composición real desde login, filtros del adaptador y notificación de publicaciones del propietario.
+- Corrección durante pruebas: la pantalla de login tiene dos textos INICIAR SESIÓN; se seleccionó explícitamente el ElevatedButton para probar la entrada real.
+- Validación: 42 pruebas aprobadas; flutter analyze sin problemas; formato de 50 archivos sin cambios; git diff --check sin errores; compilación web completada, con el aviso preexistente de fuente CupertinoIcons no incluida.
+- Pendiente: revisar la API y el PR reales del grupo #2 y conectar su adaptador definitivo; integrar el componente de Roberth y validar Deshacer/errores/persistencia con Víctor. No cerrar #28 ni hacer merge automático. No se modificaron MyAccommodationsPage, OwnerAccommodationStore ni dependencias.

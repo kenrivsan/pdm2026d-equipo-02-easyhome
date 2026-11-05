@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
+import 'package:easyhome/features/accommodations/presentation/controllers/catalog_providers.dart';
+import 'package:easyhome/features/accommodations/domain/entities/catalog_filter.dart';
+import '../../support/catalog_test_scope.dart';
 
 import 'package:easyhome/features/accommodations/data/datasources/accommodation_data_source.dart';
 import 'package:easyhome/features/accommodations/data/datasources/location_data_source.dart';
@@ -10,8 +14,7 @@ import 'package:easyhome/features/accommodations/domain/repositories/accommodati
 import 'package:easyhome/features/accommodations/presentation/controllers/accommodation_search_controller.dart';
 import 'package:easyhome/features/accommodations/presentation/pages/results_page.dart';
 
-/// Pruebas preliminares para el issue #28.
-/// Estas verifican solo lo disponible en main tras integrar PR #30.
+/// Pruebas de Víctor adaptadas al catálogo reactivo del issue #28.
 /// No sustituyen las pruebas de Dismissible, Deshacer o persistencia.
 void main() {
   late _CountingAccommodationRepository repository;
@@ -34,17 +37,17 @@ void main() {
     expect(find.text('Pensionado cerca de la USAC'), findsOneWidget);
 
     await _selectType(tester, 'Apartamento');
-    expect(controller.selectedType, AccommodationType.apartment);
+    expect(_filter(tester).type, AccommodationType.apartment);
     expect(find.text('Apartamento para estudiantes'), findsOneWidget);
     expect(find.text('Pensionado cerca de la USAC'), findsNothing);
 
     await _selectType(tester, 'Pensionado');
-    expect(controller.selectedType, AccommodationType.boardingHouse);
+    expect(_filter(tester).type, AccommodationType.boardingHouse);
     expect(find.text('Pensionado cerca de la USAC'), findsOneWidget);
     expect(find.text('Apartamento para estudiantes'), findsNothing);
 
     await _selectType(tester, 'Todos');
-    expect(controller.selectedType, isNull);
+    expect(_filter(tester).type, isNull);
     expect(find.text('Apartamento para estudiantes'), findsOneWidget);
     expect(find.text('Pensionado cerca de la USAC'), findsOneWidget);
   });
@@ -59,7 +62,12 @@ void main() {
 
     await _selectType(tester, 'Apartamento');
 
-    expect(controller.filteredAccommodations, isEmpty);
+    expect(
+      ProviderScope.containerOf(
+        tester.element(find.byType(ResultsPage)),
+      ).read(catalogResultsProvider).requireValue,
+      isEmpty,
+    );
     expect(
       find.text(
         'No se encontraron alojamientos disponibles para esta búsqueda.',
@@ -92,14 +100,18 @@ void main() {
     expect(repository.calls, 1);
 
     await _showResults(tester, controller);
-    await tester.pumpWidget(const SizedBox.shrink());
+    expect(
+      repository.calls,
+      2,
+    ); // Carga previa del MVP y consulta del catálogo.
+    await _selectType(tester, 'Apartamento');
+    expect(repository.calls, 3);
     await _showResults(tester, controller);
-    expect(repository.calls, 1);
+    expect(repository.calls, 3);
 
-    controller.selectType(AccommodationType.apartment);
-    controller.selectType(AccommodationType.apartment);
+    await _selectType(tester, 'Apartamento');
     await tester.pumpAndSettle();
-    expect(repository.calls, 1);
+    expect(repository.calls, 3);
   });
 }
 
@@ -119,11 +131,18 @@ Future<void> _showResults(
   await tester.pumpWidget(
     ChangeNotifierProvider<AccommodationSearchController>.value(
       value: controller,
-      child: const MaterialApp(home: ResultsPage()),
+      child: CatalogTestScope(
+        controller: controller,
+        child: const MaterialApp(home: ResultsPage()),
+      ),
     ),
   );
   await tester.pumpAndSettle();
 }
+
+CatalogFilter _filter(WidgetTester tester) => ProviderScope.containerOf(
+  tester.element(find.byType(ResultsPage)),
+).read(catalogFilterProvider);
 
 Future<void> _selectType(WidgetTester tester, String label) async {
   final dropdown = find.byType(DropdownButtonFormField<AccommodationType?>);

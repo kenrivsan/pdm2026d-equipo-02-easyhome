@@ -6,8 +6,8 @@ import '../../domain/entities/accommodation.dart';
 import '../../domain/entities/catalog_filter.dart';
 import '../../domain/repositories/catalog_reader.dart';
 
-/// Se inyectará el adaptador del almacenamiento acordado con el grupo #2.
-/// Mientras se acuerda ese contrato, las pruebas inyectan una fuente controlada.
+/// CatalogScope inyecta el lector del repositorio actual del MVP.
+/// Se sustituirá por el adaptador compartido al publicar su contrato definitivo.
 final catalogReaderProvider = Provider<CatalogReader>((ref) {
   throw StateError('Falta inyectar el lector del catálogo compartido.');
 });
@@ -18,8 +18,12 @@ final catalogFilterProvider =
     );
 
 class CatalogFilterNotifier extends Notifier<CatalogFilter> {
+  CatalogFilterNotifier([this.initialFilter = const CatalogFilter()]);
+
+  final CatalogFilter initialFilter;
+
   @override
-  CatalogFilter build() => const CatalogFilter();
+  CatalogFilter build() => initialFilter;
 
   void setFilter(CatalogFilter filter) {
     if (state != filter) state = filter;

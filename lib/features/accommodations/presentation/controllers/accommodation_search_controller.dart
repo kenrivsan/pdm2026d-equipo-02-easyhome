@@ -17,6 +17,10 @@ class AccommodationSearchController extends ChangeNotifier {
   final AccommodationRepository _accommodationRepository;
   final LocationRepository _locationRepository;
 
+  /// Permite componer lectores de la misma fuente, sin crear otro repositorio.
+  AccommodationRepository get accommodationRepository =>
+      _accommodationRepository;
+
   List<Accommodation> _accommodations = const [];
   List<Department> _departments = const [];
   List<University> _universities = const [];

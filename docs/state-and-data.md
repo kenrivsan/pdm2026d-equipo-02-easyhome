@@ -8,9 +8,18 @@ La base S15 incorpora `flutter_riverpod` para el estado de navegación:
 incluye un `ProviderScope` para ese estado.
 
 El controlador de búsqueda del MVP se conserva temporalmente con `provider`.
-Los PR de filtros S15 deben incorporar filtros inmutables en Riverpod Notifier
-y providers de listas que consulten el repositorio mediante `ref.watch` del
-filtro. El filtrado actual del MVP por sí solo no satisface esa parte de S15.
+El catálogo de S15 incorpora `CatalogFilter` inmutable en Riverpod Notifier
+y `catalogResultsProvider`, que observa el filtro y las revisiones de su lector.
+`ResultsPage` utiliza los componentes reactivos y Buscar entrega la ubicación
+al Notifier al pulsar Ver resultados. La sincronización con el controlador
+anterior conserva el formulario de búsqueda del MVP.
+
+`CatalogScope` es el punto de composición del lector. Temporalmente inyecta
+`CurrentCatalogReader`, que consulta el mismo repositorio existente y observa
+las publicaciones del propietario, sin introducir otra persistencia. El grupo
+#2 mantiene la responsabilidad de implementar la fuente compartida definitiva;
+su adaptador reemplazará esta composición. Borrado, Deshacer y persistencia
+siguen pendientes de integrar y verificar.
 La coordinación de S15 se centraliza en el issue #27 de Easy Home.
 
 ## Decisión

@@ -6,10 +6,10 @@ import 'package:easyhome/features/accommodations/data/repositories/accommodation
 import 'package:easyhome/features/accommodations/data/repositories/location_repository_impl.dart';
 import 'package:easyhome/features/accommodations/presentation/controllers/accommodation_search_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import '../features/accommodations/support/catalog_test_scope.dart';
 
 Future<void> mountApp(WidgetTester tester) async {
   final controller = AccommodationSearchController(
@@ -23,7 +23,10 @@ Future<void> mountApp(WidgetTester tester) async {
   await tester.pumpWidget(
     ChangeNotifierProvider.value(
       value: controller,
-      child: const ProviderScope(child: MaterialApp(home: AppShell())),
+      child: CatalogTestScope(
+        controller: controller,
+        child: const MaterialApp(home: AppShell()),
+      ),
     ),
   );
   await tester.pumpAndSettle();
