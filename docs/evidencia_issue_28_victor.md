@@ -134,8 +134,60 @@ Pendiente:
 - Comprobar funcionamiento al reiniciar la aplicacion.
 
 
+## 2026-11-05 - Consolidacion de Kenneth: ambos listados integrados
+
+La rama codex/28-integracion-almacenamiento incluye los historiales de los PR #35 y #36, el ultimo ajuste 3c9a93a y una sola copia de las siete pruebas de Victor. El propietario usa ownerAccommodationDeletionControllerProvider; no conserva un controller local paralelo. Ambos controladores escriben sobre la misma instancia del repositorio.
+
+Verificacion conjunta real: 116 pruebas aprobadas; formato de 77 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. El test adicional en catalog_shared_storage_integration_test.dart recorre las dos pantallas reales: alta, borrado/Deshacer en ambos sentidos, datos/orden y controller correcto. El backend de preferencias de ese test es memoria controlada; REAL08 sigue siendo archivo y ninguna de esas pruebas equivale a reiniciar un navegador real.
+
+| Criterio PDF | Implementado y verificado localmente | Pendiente de entrega |
+|---|---|---|
+| Navegacion, 1 | Notifier e IndexedStack; test/app/navigation_test.dart verifica destinos, Ver todos y scroll. Base de navegacion ya en main. | Comprobar regresiones al integrar toda la entrega a main. |
+| Filtro dependiente, 1.5 | catalog_providers.dart y my_accommodations_providers.dart observan filtros inmutables; catalogo conserva tipo/departamento/universidad; propietario consulta onlyOwned. Pruebas de filtro, vacio, error, consultas y respuestas tardias. | Aceptacion humana de ambos listados sobre el commit conjunto. |
+| Borrar y Deshacer, 1 | CatalogDismissible usa ValueKey(id), consulta confirma escritura; repositorio devuelve DeletedAccommodation original; errores y orden cubiertos en suites de ambos listados y prueba conjunta. | Navegador: cerrar/abrir con registro borrado y registro restaurado, ambos listados, mismo perfil y origen. |
+| Pruebas, 1 | Suite integrada: 116 aprobadas. Se preservan pruebas originales y se distinguen falsos, preferencias en memoria y archivo. | CI remoto del SHA conjunto y del resultado final en main. |
+| Proceso Git, 0.5 | Historiales conservados, bitacora consolidada, PR #35 para propietario y #36 para aceptacion de catalogo, descripciones con pregunta de key. | Revision humana de otra pareja y entrega final mediante PR a main; no se afirma 5/5. |
+
+### Orden propuesto de integracion, sujeto a revision humana
+
+1. Revisar y aprobar el almacenamiento #34 y llevarlo a main conservando su historial. La aprobacion de Victor sobre 09381fa ya fue observada; no se suplanta otra revision.
+2. Revisar los cambios del catalogo #33 y los del propietario #35/#36 sobre la preparacion conjunta. #35 y #36 apuntan a la preparacion, no entregan por si solos a main. No cambiar su base ni duplicar diffs sin revisar primero las relaciones de ancestros.
+3. Preparar el PR final del catalogo (#33) con base en 8c88063 y el historial d82a432 de aceptacion del grupo #1, sin incorporar el historial del propietario. Conservar ambos historiales mediante merge; ese recorrido contiene catalogo, almacenamiento y aceptacion, pero excluye #35. Revisar el diff antes de actualizar su rama. El PR #33 debe llegar a main con CI y revision humana del grupo #2.
+4. Despues de integrar almacenamiento y catalogo, abrir el PR final del propietario desde la preparacion conjunta hacia main actualizado. Comprobar que su diff muestre solo el delta restante del grupo #2, pruebas conjuntas y evidencia; preservar el historial de #35 y su revision humana por grupo #1. No cambiar la base de #35/#36, ya integrados en la preparacion, para aparentar dos entregas nuevas. Esta secuencia conserva un PR final por pareja, como pide el PDF. No cerrar #28/#29 hasta CI y aceptacion.
+5. Tras la integracion humana, repetir CI sobre main y entregar en Moodle el enlace al repositorio. La retroalimentacion establece entrega tardia con penalizacion; no se modifican fechas.
+
+La pantalla blanca del entorno original de Victor sigue sin causa confirmada. Su reporte solo aporta comandos flutter run -d chrome --web-port 7357 y flutter run -d web-server --web-port 7357, URL http://localhost:7357, Chrome/Brave sin versiones/perfil confirmados ni primer error. Las reproducciones satisfactorias previas no prueban cual fue la causa original.
+
+Regresion adicional del reporte de Roberth: cambiar la instancia del repositorio sin desmontar Mis alojamientos conserva su State, sustituye el controller y aplica baja/Deshacer solo al repositorio nuevo. Prueba real de composicion con preferencias controladas, incluida en la ejecucion de 116. GitHub reconoce #35/#36 como integrados en la preparacion; main continua pendiente.
+
 ## 2026-11-05 - Entrega final de catalogo, PR #33
 
 Base de preparacion: 8c88063 mas historial de Roberth d82a432, sin rama #35 ni pantalla de propietario. Esta entrega por separado pasa 100 pruebas, formato de 70 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. No confundir con las 116 pruebas de la preparacion conjunta.
 
 El almacenamiento #34 debe integrarse primero a main. Luego este PR del grupo #1 requiere CI y revision humana del grupo #2. La entrega del propietario tendra un PR final separado. La validacion manual de borrado/restauracion tras cerrar el navegador se documentara sobre la preparacion conjunta y no se sustituye por REAL08.
+
+## 2026-11-05 - Entrega final de propietario preparada
+
+feat/29-entrega-final preserva la preparacion dcf8259 y el catalogo final ee6fda3. Verificada por separado: 116 pruebas, formato de 77 archivos, analisis y web aprobados. El PR inicial debe comparar contra feat/28-filtro; luego main tras integrar el catalogo. CI del catalogo confirmado: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/actions/runs/42071848470 . CI de la preparacion dcf8259: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/actions/runs/42064370142 . El nuevo propietario requiere su propia ejecucion y revision humana.
+
+## 2026-11-05 - Verificacion final en navegador real por Kenneth
+
+Se completo la validacion de la pagina 2 del PDF sobre el codigo productivo de 2f9495f, que contiene ambos listados. Automatizacion Playwright CLI, Chromium Headless 156.0.0.0 en Windows, perfil persistente propio easyhome-final-browser-profile, origen fijo http://127.0.0.1:8101. Servidor: python -m http.server 8101 --bind 127.0.0.1 --directory build/web. Build: flutter build web --no-pub --no-web-resources-cdn. Es una prueba de navegador real automatizada; no una aprobacion humana ni una prueba en el perfil original de Victor.
+
+1. Se publicaron desde el formulario S15 QA A borrado (Q1000, ID owner-1793902796900000, sequence 3) y S15 QA B restaurado (Q1200, ID owner-1793902802254000, sequence 4). Ambos aparecieron en catalogo.
+2. Se deslizo A y se dejo vencer su Deshacer: quedo eliminado. Se deslizo B y se pulso Deshacer: volvio con el mismo ID y registro completo. Mis alojamientos mostro B y no A.
+3. Se cerro completamente la instancia del navegador mediante playwright-cli close y se abrio de nuevo con el mismo perfil y URL, sin restaurar un state guardado. La CLI reporto procesos distintos (19448 y 29640).
+4. Tras entrar de nuevo, catalogo y Mis alojamientos muestran B y no A, con filtro Todos. La comparacion JSON del registro canonico y sequence de B fue identica al snapshot tomado antes de borrarlo: tipo, ubicacion, departamento, universidades, precio, descripcion, disponibilidad, banos, tamano, imagenes, contacto e isOwned. A conserva su tombstone delete-0 y no aparece como activo. No hay duplicados.
+5. Consola tras reapertura: cero errores y cero advertencias. No se reprodujo pantalla blanca en este entorno.
+
+La capa accesible de Flutter inicialmente transformaba el gesto automatizado en una apertura de detalle. Se detecto leyendo la pantalla y el almacenamiento (no hubo borrado), se volvio al catalogo y se desactivo temporalmente solo la captura CSS de puntero de la capa semantica durante el gesto. El evento se envio al lienzo, luego se restauro la capa y se pulso el Deshacer visible. No se modifico el codigo productivo ni se escribieron datos desde JavaScript: altas, bajas y restauracion pasaron por la interfaz; localStorage se leyo para comparar el resultado.
+
+Capturas despues de cerrar y reabrir:
+
+![Catalogo tras reapertura: B presente y A ausente](evidencias/s15/reapertura-catalogo.png)
+
+![Mis alojamientos tras reapertura: mismo B restaurado](evidencias/s15/reapertura-propietario.png)
+
+### Proceso Git y autorizacion
+
+El usuario autorizo expresamente integrar #34, #33 y #37 a main dejando documentadas las revisiones pendientes. #34 tiene aprobacion humana de victordeleon172003 sobre 09381fa. #33 y #37 no tenian aprobaciones humanas registradas al autorizar la integracion. No se emiten revisiones en nombre de otra persona, no se marca completado el criterio de revision de otra pareja y no se afirma nota 5/5. La autorizacion de integracion de Kenneth no se presenta como revision independiente.

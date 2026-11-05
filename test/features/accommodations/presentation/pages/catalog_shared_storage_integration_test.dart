@@ -1,3 +1,7 @@
+import 'package:easyhome/app/accommodation_deletion_providers.dart';
+import 'package:easyhome/features/accommodations/presentation/pages/my_accommodations_page.dart';
+import 'package:easyhome/features/accommodations/presentation/widgets/catalog_undo_host.dart';
+import '../../support/fake_owner_shared_repository.dart' show ownerRecord;
 import 'package:easyhome/app/app.dart';
 import 'package:easyhome/features/accommodations/data/datasources/accommodation_data_source.dart';
 import 'package:easyhome/features/accommodations/data/repositories/shared_accommodation_repository_impl.dart';
@@ -259,6 +263,148 @@ void main() {
         await repository.query(const AccommodationQuery(onlyOwned: true)),
         [publication],
       );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  appTest(
+    'ambas pantallas reales comparten alta, borrado y Deshacer del propietario',
+    (tester) async {
+      final repository = create();
+      await mount(tester, repository);
+      final publication = ownerRecord('aceptacion-conjunta');
+      await repository.add(publication);
+      await tester.pumpAndSettle();
+      expect(find.text(publication.title), findsOneWidget);
+      final before = await repository.query(const AccommodationQuery());
+
+      await tester.tap(find.text('Propietario'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mis alojamientos'));
+      await tester.pumpAndSettle();
+      expect(find.text(publication.title), findsOneWidget);
+      final ownerPage = find.byType(MyAccommodationsPage);
+      final container = ProviderScope.containerOf(tester.element(ownerPage));
+      final host = tester.widget<CatalogUndoHost<Object>>(
+        find.descendant(
+          of: ownerPage,
+          matching: find.byType(CatalogUndoHost<Object>),
+        ),
+      );
+      expect(
+        host.controller,
+        same(container.read(ownerAccommodationDeletionControllerProvider)),
+      );
+      expect(
+        host.controller,
+        isNot(same(container.read(catalogDeletionControllerProvider))),
+      );
+      expect(
+        container.read(sharedAccommodationRepositoryProvider),
+        same(repository),
+      );
+
+      await swipe(tester, publication.id);
+      expect(find.text(publication.title), findsNothing);
+      expect(
+        await repository.query(const AccommodationQuery(onlyOwned: true)),
+        isEmpty,
+      );
+      await tester.tap(find.text('Deshacer'));
+      await tester.pumpAndSettle();
+      expect(find.text(publication.title), findsOneWidget);
+      expect(await repository.query(const AccommodationQuery()), before);
+      expect(
+        await repository.query(const AccommodationQuery(onlyOwned: true)),
+        [publication],
+      );
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Alojamientos'));
+      await tester.pumpAndSettle();
+      expect(find.text(publication.title), findsOneWidget);
+      // Volver a mostrar cada pantalla permite reanudar sus listeners y verificar
+      // el resultado visible, en lugar de inspeccionar widgets fuera de vista.
+      await swipe(tester, publication.id);
+      expect(find.text(publication.title), findsNothing);
+      await tester.tap(find.text('Propietario'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mis alojamientos'));
+      await tester.pumpAndSettle();
+      expect(find.text(publication.title), findsNothing);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Alojamientos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Deshacer'));
+      await tester.pumpAndSettle();
+      expect(find.text(publication.title), findsOneWidget);
+      await tester.tap(find.text('Propietario'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mis alojamientos'));
+      await tester.pumpAndSettle();
+      expect(find.text(publication.title), findsOneWidget);
+      expect(await repository.query(const AccommodationQuery()), before);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  appTest(
+    'sustituir repositorio sin desmontar propietario escribe en la instancia vigente',
+    (tester) async {
+      final previous = create();
+      await mount(tester, previous);
+      final publication = ownerRecord('cambio-repositorio');
+      await previous.add(publication);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Propietario'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mis alojamientos'));
+      await tester.pumpAndSettle();
+      final ownerPage = find.byType(MyAccommodationsPage);
+      final originalState = tester.state(ownerPage);
+      final originalController = ProviderScope.containerOf(
+        tester.element(ownerPage),
+      ).read(ownerAccommodationDeletionControllerProvider);
+      final next = SharedPreferencesAccommodationRepository(
+        preferences: SharedPreferencesAsync(),
+        storageKey: 'kenneth.replacement.v1',
+        loadInitialAccommodations: () async => [publication],
+      );
+      repositories.add(next);
+      final root = ProviderScope.containerOf(
+        tester.element(find.byType(EasyHomeApp)),
+      );
+      root.updateOverrides([
+        sharedAccommodationRepositoryProvider.overrideWithValue(next),
+      ]);
+      await tester.pumpAndSettle();
+      expect(tester.state(ownerPage), same(originalState));
+      final current = ProviderScope.containerOf(tester.element(ownerPage));
+      expect(current.read(sharedAccommodationRepositoryProvider), same(next));
+      expect(
+        current.read(ownerAccommodationDeletionControllerProvider),
+        isNot(same(originalController)),
+      );
+      expect(find.text(publication.title), findsOneWidget);
+      await swipe(tester, publication.id);
+      expect(
+        await next.query(const AccommodationQuery(onlyOwned: true)),
+        isEmpty,
+      );
+      expect(await previous.query(const AccommodationQuery(onlyOwned: true)), [
+        publication,
+      ]);
+      await tester.tap(find.text('Deshacer'));
+      await tester.pumpAndSettle();
+      expect(await next.query(const AccommodationQuery(onlyOwned: true)), [
+        publication,
+      ]);
+      expect(await previous.query(const AccommodationQuery(onlyOwned: true)), [
+        publication,
+      ]);
+      expect(find.text(publication.title), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

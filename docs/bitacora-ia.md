@@ -164,6 +164,43 @@
 - Verificacion final: 85 pruebas aprobadas; flutter analyze --no-pub sin problemas; formato de 68 archivos sin cambios; flutter build web --no-pub --no-web-resources-cdn aprobado. Persiste el aviso no bloqueante de fuente Cupertino. No se repitio la prueba manual de navegador para este cambio de composicion.
 - Pendiente: integracion de la pantalla real de Emmanuel, aceptacion de Roberth y sincronizacion visual conjunta. La prueba de composicion no equivale a tener ambos listados ya conectados. Sin cambios a main, merge automatico ni cierre de issues. No se crearon archivos de prompts o coordinacion.
 
+## 2026-11-04 - Issue #29: contrato y filtro aislado
+
+- Herramienta: Codex.
+- Solicitud: implementar el listado del grupo #2 en `feat/29-filtro`, respetando la coordinación del grupo #1.
+- Inspección: `README.md`, `docs/architecture.md`, `docs/state-and-data.md`, código de `MyAccommodationsPage`, `OwnerAccommodationStore`, alta y catálogo; issues #27, #28 y #29; historial y estado local/remoto de `main`.
+- Confirmación GitHub: `main` apunta al merge 58166bf del PR #30. Rama local `feat/29-filtro` creada desde ese commit.
+- Estado compartido: #27 no tiene comentarios con acuerdo de almacenamiento. El store actual solo agrega en memoria, usa tipo de texto y carece de consulta filtrada, borrado y restauración.
+- Contrato propuesto en `owner_accommodation_repository.dart`: consulta asíncrona filtrada por `AccommodationType?`; borrar por id y confirmar solo al persistir; restaurar el objeto completo con el mismo id de forma idempotente; catálogo y listado leen la misma fuente de verdad. No se publicó comentario en GitHub.
+- Implementación aislada: filtro inmutable con igualdad, Notifier Riverpod y FutureProvider dependiente de `ref.watch` del filtro y contrato inyectable. Se añadieron pruebas de igualdad, no reconsulta con el mismo filtro, consulta al cambiar, recuperación ante error y protección ante respuesta tardía.
+- Propuesta descartada: adaptar ahora `OwnerAccommodationStore` o `ResultsPage` unilateralmente. El issue #29 exige acuerdo primero y ambas piezas son compartidas con el grupo #1; la implementación queda aislada hasta acordar.
+- Limitaciones: los adjuntos `Lab4 D.pdf` y retroalimentación docente no estaban disponibles en el workspace en esta sesión. No se afirma persistencia tras reinicio; el store existente es solo memoria.
+- Pendiente: acuerdo en #27; adaptador persistente compatible con web; UI del listado, Deshacer y pruebas de widgets/integración; validaciones Flutter y entrega/PR.
+
+### Validación local del avance aislado
+
+- Corrección: se reemplazaron imports relativos de `lib/` por imports `package:` después de que `flutter analyze` señaló esos avisos. La ejecución inicial también regeneró `pubspec.lock` y añadió exclusiones automáticas en `analysis_options.yaml`; ambos archivos se restauraron sin conservar cambios.
+- Formato: `dart format --output=none --set-exit-if-changed` en los cuatro archivos Dart nuevos, 0 cambios pendientes.
+- `flutter analyze --no-pub`: No issues found.
+- `flutter test --no-pub`: 21 pruebas aprobadas, incluyendo 4 nuevas de filtro/provider.
+- `flutter build web --no-pub`: finalizado correctamente. Flutter mostró los avisos existentes de `CupertinoIcons` no incluida y recomendación del dry run WASM; no se cambió `pubspec` para silenciarlos.
+- Estas comprobaciones cubren solo el avance aislado; no acreditan aún UI de Mis alojamientos, borrado/Deshacer, persistencia, sincronización del catálogo ni cumplimiento total del issue #29.
+- Ampliación del chequeo de formato: `dart format --output=none --set-exit-if-changed lib test`, 40 archivos, 0 cambios.
+
+## 2026-11-04 - Issue #29: UI aislada de Mis alojamientos
+
+- Implementación: `MyAccommodationsPage` ahora usa Riverpod y el provider dependiente del filtro; agrega Todos/Apartamento/Pensionado, estado de carga, error con Reintentar, vacío sin publicaciones con acción Agregar y vacío filtrado con acción Limpiar. Se conservan las tarjetas y se actualiza la consulta al volver de publicar.
+- Adaptación temporal: se agregó `OwnerAccommodationStoreReadAdapter`, de solo lectura, sin editar `OwnerAccommodationStore`. Mapea el tipo al enum del dominio y consulta los registros existentes. Borrar/restaurar lanzan `UnsupportedError` hasta el acuerdo de #27; no se ofrecen acciones de borrado todavía.
+- Pruebas widget nuevas con repositorio falso: carga/datos, filtro y visibilidad, vacío inicial/Agregar, vacío por filtro/Limpiar y error/Reintentar.
+- `dart format --output=none --set-exit-if-changed lib test`: 42 archivos, 0 cambios.
+- `flutter analyze --no-pub`: No issues found.
+- `flutter test --no-pub`: 26 pruebas aprobadas.
+- `flutter build web --no-pub`: finalizado correctamente; Flutter mostró el aviso WASM dry run y la referencia existente a `CupertinoIcons` sin asset.
+- Pendiente de coordinación: no se modificaron catálogo ni almacenamiento compartido. El adaptador sigue siendo temporal/en memoria y no acredita persistencia al cerrar y abrir la app. Esperar acuerdo de #27 para implementar CRUD durable y sincronización del mismo origen de datos con el catálogo.
+- Corrección de integración de altas: al crear una nueva instancia de la página se invalida la consulta para incluir publicaciones hechas previamente desde el panel; volver de Agregar también invalida la consulta. La reconstrucción de la página no invalida el provider.
+- Validación tras este ajuste: formato global `lib test` (42 archivos, 0 cambios), análisis sin problemas, suite completa (26 aprobadas) y compilación web completada. `git diff --check` limpio; sin commit ni PR.
+
+
 ## 2026-11-04 - QA de aceptacion issue #28 - Victor
 
 - Herramienta utilizada: ChatGPT.
@@ -178,9 +215,45 @@
 - Pendiente: validar integracion y persistencia real.
 - Las pruebas no certifican aun el issue #28 completo.
 
+## 2026-11-05 - Kenneth: integracion conjunta de #35 y #36
+
+- Herramienta: Codex. Autorizacion del usuario para incorporar ambas ramas en la preparacion, sin merge a main. El merge 1152fba conserva el historial de Emmanuel (28010d2 y 1f52aef); 1511baf conserva la aceptacion de Roberth (d82a432) y el cherry-pick original de las siete pruebas de Victor (091970c). Los dos conflictos fueron en la bitacora y se conservaron ambas entradas. Hay un solo archivo catalog_acceptance_victor_test.dart.
+- Composicion: 04548a4 retira el controlador local de MyAccommodationsPage y consume ownerAccommodationDeletionControllerProvider. Los controladores del propietario y catalogo son distintos, se disponen por Riverpod y comparten repositorio y snapshot original. El provider del propietario tambien permite montar su pantalla en aislamiento, sin una fabrica paralela en la pagina.
+- Se incorporo despues 3c9a93a de Emmanuel mediante el merge 4d7123b: errores sin reintento automatico en myAccommodationsProvider; prueba temporal de 750 ms sin consulta extra y recuperacion al invalidar. No se repitio su implementacion.
+- Prueba conjunta nueva: app real con repositorio persistente y preferencias controladas, alta compartida, navegacion al propietario, identidad del controller inyectado, borrar/Deshacer desde propietario y desde catalogo, efectos visibles en la otra pantalla, mismos registros y orden. Se corrigio el selector inicial que exigia inspeccionar widgets fuera de vista; el test final navega a cada pantalla y mantiene las comprobaciones del resultado real. No equivale a cerrar un navegador.
+- Validacion final del codigo integrado: 115 pruebas aprobadas en una sola ejecucion, no suma de reportes; formato de 77 archivos sin cambios; flutter analyze --no-pub sin problemas; flutter build web --no-pub --no-web-resources-cdn aprobado (aviso de fuente Cupertino preexistente). Se verifico que ambas puntas remotas sean ancestros de HEAD. CI conjunto remoto aun pendiente.
+- Se leyo el PDF local Lab4 D.pdf: exige main con navegacion y PR de cada pareja, CI y revision; validacion de cerrar/abrir conservando lo borrado y restaurado. La evidencia automatizada de archivo/memoria se distingue de esa prueba de navegador. No se marca la entrega completa ni se asigna una nota.
+- Registro comunicado por Emmanuel para su trabajo: preservo ambos historiales, sustituyo la fuente provisional sin otra persistencia, amplio pruebas y corrigio espera de SnackBar y selector Todos; 97 pruebas de su rama, no del conjunto. Su revision de IA del catalogo no es aprobacion humana.
+- Registro comunicado por Roberth para su trabajo: incorporo siete pruebas de Victor con autoria y ocho casos con repositorio real, diferenciando fuentes falsas, memoria y archivo; corrigio harness asincrono sin modificar produccion; reporto 98 pruebas y CI en su rama. No reprodujo pantalla blanca persistente ni atribuyo causa. Esta integracion conserva su evidencia en docs/evidencia_issue_28_victor.md.
+- Pendiente: revision cruzada humana sobre el SHA publicado, navegador con dos registros (uno borrado y otro restaurado) tras cierre completo y reapertura en mismo perfil/origen, CI conjunto e integracion por PR a main. #34 continua abierto; no se cambiaron bases ni se cerraron issues/PR por API.
+
+## 2026-11-05 - Kenneth: regresion del repositorio sustituido reportada por Roberth
+
+- El reporte de Roberth sobre #35 indicaba que el controlador local seguia enlazado al repositorio leido en initState si se sustituia la instancia sin desmontar la pantalla. La preparacion ya lo habia reemplazado por ref.watch(ownerAccommodationDeletionControllerProvider).
+- Se agrego una prueba de regresion en catalog_shared_storage_integration_test.dart: monta la app real y el propietario, cambia el override del repositorio, conserva el mismo State de la pantalla y comprueba controller nuevo, baja y Deshacer solo sobre el repositorio vigente; el anterior mantiene su publicacion intacta. La prueba pasa sin cambios productivos adicionales.
+- Se ejecuto nuevamente la suite completa: 116 pruebas aprobadas; analisis sin problemas. La compilacion web anterior valida el mismo codigo productivo; este ultimo cambio solo agrega la prueba y evidencia. Se verifica formato antes de publicar.
+- GitHub reconoce #35 y #36 como merged en codex/28-integracion-almacenamiento tras publicar sus merges. Sus destinos fueron siempre la preparacion: no significa entrega a main. #34 sigue abierto y no se cerraron issues ni se emitieron aprobaciones humanas.
+- Roberth reporto 101 pruebas en su revision individual de #35 y no emitio aprobacion humana; esa cifra no se usa como conteo conjunto. La reproduccion original de Victor sigue incompleta (version/perfil/error faltantes); el bloqueo de su navegador no se presenta como fallo de almacenamiento.
+
 ## 2026-11-05 - Kenneth: preparacion final del catalogo para PR #33
 
 - Se preparo un worktree desde 8c88063 y se integro el historial d82a432 de aceptacion de Roberth mediante merge, sin incorporar la rama del propietario. Conflicto unico de bitacora resuelto conservando ambas entradas. Las siete pruebas de Victor permanecen en un solo archivo.
 - Validacion propia de esta entrega: 100 pruebas aprobadas, formato de 70 archivos sin cambios, flutter analyze --no-pub sin problemas y flutter build web --no-pub --no-web-resources-cdn aprobado; aviso Cupertino preexistente. No se publica el ajuste automatico de pubspec.lock producido por el SDK local.
 - Se actualiza la rama remota feat/28-filtro solo mediante avance normal, manteniendo el PR #33 y su base main. El historial del almacenamiento #34 es ancestro; sigue requiriendo su revision e integracion humana. No se hace merge a main ni se cierran issues.
 - La descripcion final del PR incluye la pregunta de key y separa resultados locales de CI/revision y cierre/reapertura. El proceso final requiere otro PR del propietario sobre esta base; no se sustituyen dos entregas de parejas por una sola.
+
+## 2026-11-05 - Kenneth: entrega final del propietario preparada por separado
+
+- Se creo feat/29-entrega-final desde dcf8259 y se integro la rama final del catalogo (ee6fda3), preservando los historiales. Los conflictos fueron solo en bitacora/evidencia; se conservaron ambos lados. Se comprobo diff vacio de lib, test, web, dependencias y CI contra dcf8259 antes de las verificaciones: no se reimplemento funcionalidad.
+- La comparacion con feat/28-filtro muestra solo el delta del propietario, su adaptador/filtro/providers, composicion de borrado, pruebas conjuntas y documentos. No modifica ResultsPage ni el almacenamiento compartido. Base inicial propuesta del PR: feat/28-filtro, para revisar solo ese delta; llevarlo a main despues de integrar el catalogo y comprobar el diff.
+- Verificacion en su propio worktree: 116 pruebas aprobadas, formato 77 archivos sin cambios, analisis sin problemas y compilacion web sin CDN aprobada. Se restaura el lockfile original tras resolver dependencias locales; no se agregan cambios de dependencias.
+- CI del catalogo ee6fda3 confirmado: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/actions/runs/42071848470 (pull_request), tambien 42071837433 (push), ambos success. CI de dcf8259 reportado por Roberth y contrastado: 42064370142, calidad y web success. Estos resultados no sustituyen el CI propio del nuevo SHA del propietario.
+- Roberth reporta dos pruebas inversas adicionales en un ZIP de su equipo; no son accesibles desde este workspace ni estan integradas en esta rama. No se afirma suite de 118. Su hallazgo del repositorio sustituido esta resuelto en el escenario reproducido. Emmanuel solo ha confirmado iniciar el servidor 8099: cierre/reapertura con borrado/restauracion sigue pendiente.
+- Estado de autenticacion observado: GitHub CLI instalada pero gh auth status sigue sin cuenta. Las ramas se publican mediante Git; crear/editar PR requiere completar autenticacion o usar la sesion web. No se leen ni publican credenciales, no se emiten aprobaciones humanas y no se hace merge a main.
+
+## 2026-11-05 - Kenneth: cierre/reapertura y autorizacion de integracion final
+
+- Se realizo directamente la comprobacion de navegador solicitada por el usuario, sin delegarla: dos altas desde formulario, A borrado, B borrado y restaurado por SnackBar, cierre completo y reapertura de Chromium Headless 156 en mismo perfil/origen. Se comprobo A ausente y B identico (campos completos, ID y sequence) en ambos listados. Se publican capturas y pasos en docs/evidencia_issue_28_victor.md; consola sin errores/advertencias.
+- Correccion de la automatizacion: se ajustaron nombres accesibles de dropdowns inicialmente vacios. El primer gesto abrio detalle en vez de borrar; no se considero exitoso. Se envio el gesto al lienzo evitando temporalmente la captura CSS de la capa semantica y se restauro esa capa antes de pulsar Deshacer. No se altero codigo productivo ni se escribio localStorage para simular resultados. Scripts y perfil quedan fuera del repositorio.
+- El usuario autorizo integrar #34 -> #33 -> #37 y documentar revisiones pendientes. Se comprobo aprobacion humana de Victor en #34; #33/#37 carecian de aprobaciones. No se suplanta revision, no se afirma cumplimiento completo del proceso Git ni se cierran automaticamente issues.
+- Ultimo codigo productivo verificado: 116 pruebas, formato y analisis correctos, web aprobada; CI propio de 2f9495f en 42073464697. Este commit agrega solo documentacion y capturas: se esperara su CI antes de integrar y se comprobara CI del resultado en main.
