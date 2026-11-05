@@ -199,3 +199,17 @@
 - Pendiente de coordinación: no se modificaron catálogo ni almacenamiento compartido. El adaptador sigue siendo temporal/en memoria y no acredita persistencia al cerrar y abrir la app. Esperar acuerdo de #27 para implementar CRUD durable y sincronización del mismo origen de datos con el catálogo.
 - Corrección de integración de altas: al crear una nueva instancia de la página se invalida la consulta para incluir publicaciones hechas previamente desde el panel; volver de Agregar también invalida la consulta. La reconstrucción de la página no invalida el provider.
 - Validación tras este ajuste: formato global `lib test` (42 archivos, 0 cambios), análisis sin problemas, suite completa (26 aprobadas) y compilación web completada. `git diff --check` limpio; sin commit ni PR.
+
+## 2026-11-04 - QA de aceptacion issue #28 - Victor
+
+- Herramienta utilizada: ChatGPT.
+- Se revisaron los componentes del PR #32 y el contrato del PR #34.
+- Se prepararon 7 pruebas de aceptacion con fuente controlada.
+- Resultado individual: 7 pruebas aprobadas.
+- Suite completa: 49 pruebas aprobadas.
+- flutter analyze: sin problemas.
+- flutter build web: compilacion exitosa.
+- git diff --check: sin errores.
+- No se modificaron ResultsPage ni el almacenamiento.
+- Pendiente: validar integracion y persistencia real.
+- Las pruebas no certifican aun el issue #28 completo.
