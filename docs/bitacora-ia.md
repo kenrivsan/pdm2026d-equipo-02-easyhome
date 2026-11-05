@@ -1,5 +1,15 @@
 # Bitácora de uso de IA
 
+## 2026-11-04 — Roberth: revisión de conexión #33 y desmontaje
+
+- Herramienta: Codex. Se revisaron #32, #33 (`343446f`), #34 (`09381fa`), su retroalimentación publicada, archivos de conexión, contrato y providers del repositorio real. El PDF S15/retroalimentación externa siguen ausentes; no se afirma haberlos leído.
+- Autoría/alcance: los commits originales de Roberth ya son ancestros de #33. No se repitieron ni se incorporó código de Kenneth a la rama de #32. Coordinación de archivos publicada antes de editar en #33, comentario 6650302698. Solo se modifica el controller propio, su test, bitácora y evidencia existentes; sin ResultsPage, almacenamiento, dependencias ni Mis alojamientos.
+- Hallazgo de integración: Kenneth mantiene el host fuera del Scaffold y estados de consulta, con controller independiente del filtro. La capacidad productiva sigue null hasta integrar #34. Las ocho pruebas originales de conexión pasan.
+- Reproducción: tres aserciones fallaron al comprobar IDs bloqueados tras desmontar durante borrado, fallo de restauración o cancelación antes de entregar el evento. La prueba anterior de desmontaje solo comprobaba ausencia de excepciones; se amplió para verificar también bloqueo y número de operaciones.
+- Corrección generada/revisada: liberar tickets cuando desaparece el último consumidor o termina una operación sin consumidor; conservar bloqueo durante la escritura/restauración pendiente. No se emiten éxitos ficticios ni se repiten escrituras. Nueva prueba de remontaje verifica Reintentar con el mismo snapshot; se descartó modificar el host o la pantalla para compensar el estado perdido del controller.
+- Validación: 36 pruebas en rama propia; 65 pruebas en copia aislada de #33 con únicamente controller/tests corregidos; formato 41 y 56 archivos, respectivamente, sin cambios; análisis sin problemas en ambas copias. No se publica esa copia ni se añade #34 a ninguna rama. El resultado de CI y commit incremental se comunican en #32/#33 al concluir.
+- Conexión futura: se documenta el tipo DeletedAccommodation con token/sequence y la necesidad de compartir instancia de repositorio entre lectura/callbacks. #34 sigue sin integrar; la conexión real y la validación persistente quedan pendientes de Kenneth/Víctor tras esa dependencia. No hay merge ni cierres automáticos.
+
 ## 2026-11-04 - Inicio S15 y base compartida
 
 - Herramienta: Codex.
