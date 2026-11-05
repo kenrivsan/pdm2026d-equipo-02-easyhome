@@ -169,3 +169,25 @@ El almacenamiento #34 debe integrarse primero a main. Luego este PR del grupo #1
 ## 2026-11-05 - Entrega final de propietario preparada
 
 feat/29-entrega-final preserva la preparacion dcf8259 y el catalogo final ee6fda3. Verificada por separado: 116 pruebas, formato de 77 archivos, analisis y web aprobados. El PR inicial debe comparar contra feat/28-filtro; luego main tras integrar el catalogo. CI del catalogo confirmado: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/actions/runs/42071848470 . CI de la preparacion dcf8259: https://github.com/kenrivsan/pdm2026d-equipo-02-easyhome/actions/runs/42064370142 . El nuevo propietario requiere su propia ejecucion y revision humana.
+
+## 2026-11-05 - Verificacion final en navegador real por Kenneth
+
+Se completo la validacion de la pagina 2 del PDF sobre el codigo productivo de 2f9495f, que contiene ambos listados. Automatizacion Playwright CLI, Chromium Headless 156.0.0.0 en Windows, perfil persistente propio easyhome-final-browser-profile, origen fijo http://127.0.0.1:8101. Servidor: python -m http.server 8101 --bind 127.0.0.1 --directory build/web. Build: flutter build web --no-pub --no-web-resources-cdn. Es una prueba de navegador real automatizada; no una aprobacion humana ni una prueba en el perfil original de Victor.
+
+1. Se publicaron desde el formulario S15 QA A borrado (Q1000, ID owner-1793902796900000, sequence 3) y S15 QA B restaurado (Q1200, ID owner-1793902802254000, sequence 4). Ambos aparecieron en catalogo.
+2. Se deslizo A y se dejo vencer su Deshacer: quedo eliminado. Se deslizo B y se pulso Deshacer: volvio con el mismo ID y registro completo. Mis alojamientos mostro B y no A.
+3. Se cerro completamente la instancia del navegador mediante playwright-cli close y se abrio de nuevo con el mismo perfil y URL, sin restaurar un state guardado. La CLI reporto procesos distintos (19448 y 29640).
+4. Tras entrar de nuevo, catalogo y Mis alojamientos muestran B y no A, con filtro Todos. La comparacion JSON del registro canonico y sequence de B fue identica al snapshot tomado antes de borrarlo: tipo, ubicacion, departamento, universidades, precio, descripcion, disponibilidad, banos, tamano, imagenes, contacto e isOwned. A conserva su tombstone delete-0 y no aparece como activo. No hay duplicados.
+5. Consola tras reapertura: cero errores y cero advertencias. No se reprodujo pantalla blanca en este entorno.
+
+La capa accesible de Flutter inicialmente transformaba el gesto automatizado en una apertura de detalle. Se detecto leyendo la pantalla y el almacenamiento (no hubo borrado), se volvio al catalogo y se desactivo temporalmente solo la captura CSS de puntero de la capa semantica durante el gesto. El evento se envio al lienzo, luego se restauro la capa y se pulso el Deshacer visible. No se modifico el codigo productivo ni se escribieron datos desde JavaScript: altas, bajas y restauracion pasaron por la interfaz; localStorage se leyo para comparar el resultado.
+
+Capturas despues de cerrar y reabrir:
+
+![Catalogo tras reapertura: B presente y A ausente](evidencias/s15/reapertura-catalogo.png)
+
+![Mis alojamientos tras reapertura: mismo B restaurado](evidencias/s15/reapertura-propietario.png)
+
+### Proceso Git y autorizacion
+
+El usuario autorizo expresamente integrar #34, #33 y #37 a main dejando documentadas las revisiones pendientes. #34 tiene aprobacion humana de victordeleon172003 sobre 09381fa. #33 y #37 no tenian aprobaciones humanas registradas al autorizar la integracion. No se emiten revisiones en nombre de otra persona, no se marca completado el criterio de revision de otra pareja y no se afirma nota 5/5. La autorizacion de integracion de Kenneth no se presenta como revision independiente.
